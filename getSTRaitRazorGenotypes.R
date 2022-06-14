@@ -22,7 +22,8 @@ for(primer in list_of_primers_to_include)
           #Ensure we're not dealing with a primer/sample configuration for which STRait Razor failed
           result_filename <- paste("./results/P-pyrhulla_",
                                     sample,".sorted.duplicates_Primer",
-                                    primer, "_STRaitRazor.txt",sep="")
+                                    primer, 
+                                    "_STRaitRazor_multiple_flanks_unique.txt",sep="")
           if (!file.exists(result_filename)) {
             print(paste("Strait razor result file does not exist for primer", 
                                 primer, "and sample", sample))
@@ -71,9 +72,9 @@ for(primer in list_of_primers_to_include)
                         #note - significant alleles are always in order of frequency
                         if(length(significant_alleles)>0)
                         {
-                            all_allele_1 <- c(all_allele_1,significant_alleles[1])
                             significant_alleles <- rev(significant_alleles[order(nchar(significant_alleles), 
                                                                         significant_alleles)])
+                            all_allele_1 <- c(all_allele_1,significant_alleles[1])
                             #Case 1 - one significant allele - homozygous
                             if(length(significant_alleles) == 1)
                             {
