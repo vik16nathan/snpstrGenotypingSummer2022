@@ -1,6 +1,5 @@
 library(data.table)
 library(readr)
-
 #Define a function to convert the 3' to 5' reverse read to a
 #5' to 3' forward read (useful for reverse flanking regions)
 reverse_flanking_sequence <- function(sequence) {
@@ -138,11 +137,12 @@ all_flank_pairs <- expand.grid(significant_forward_flanks,
                 significant_reverse_flanks)
 
 #If we couldn't find any new flanking regions, use flanks from reference genome
-#see extractFlankingRegions.r
+#see PERF_tsv_to_STRaitRazor_config.r
+reference_config_df <- as.data.frame(read_tsv(paste("./config/Pyrhulla_pyrhulla_Primer",
+                            primer,".config",sep="")))
 if(nrow(all_flank_pairs) == 0)
 {
-    output_df <- as.data.frame(read_tsv(paste("./config/Pyrhulla_pyrhulla_Primer",
-                            primer,".config",sep="")))
+    output_df <- reference_config_df
 } else {
     #Create output config file
     config_file_header <- c("#Marker", "Type", 
@@ -159,6 +159,7 @@ if(nrow(all_flank_pairs) == 0)
                     all_flank_pairs, all_markers, all_periods, all_offsets)
 
     colnames(output_df) <- config_file_header
+    output_df <- unique(rbind(output_df, reference_config_df))
 }
 write.table(output_df, 
             paste("config/Pyrhulla_pyrhulla_Primer",primer,
