@@ -1,5 +1,11 @@
 library(data.table)
+args = commandArgs(trailingOnly=TRUE)
+if (length(args)!=1) {
+  stop("Must supply length of flanking regions!", call.=FALSE)
+} 
 
+
+flank_length <- as.integer(args[1])
 #Start by reading in a perf file generated from the reference genomes of all thirty primers
 #This file contains the start and stop positions of STRs within the reference genomes.
 #We will use this information in addition to the .fasta file itself to extract flanking sequences, 
@@ -7,7 +13,6 @@ library(data.table)
 
 #Perf input generated using the following command
 #PERF -i Pyrhulla_pyrhulla_PrimerRef.fasta
-#PERF -i Pyrhulla_pyrhulla_PrimerRef_Probe_.fasta
 perf_input <- as.data.frame(read.table("Pyrhulla_pyrhulla_PrimerRef_perf.tsv")) #could have off-by-one
 
 fasta_sequences <- readLines("Pyrhulla_pyrhulla_PrimerRef.fasta")
@@ -17,7 +22,7 @@ config_file_header <- c("#Marker", "Type", "5'Flank", "3'Flank",	"Motif",	"Perio
 #Iterate through all primers and find the flanking sequences for the STR
 for(primer in 1:30)
 {
-    #First, scan the reference genome.
+    #First, scan the reference genome
 
     #Isolate the starting and ending points of the STR
     start_point <- perf_input[primer,2]
@@ -32,8 +37,8 @@ for(primer in 1:30)
     #Every odd-numbered line contains a label for a primer (e.g. Primer1, Primer 3, etc.)
     #Every even-numbered line contains a reference sequence for a primer.
 
-    left_flank <- c(substr(fasta_sequences[2*primer],start_point-10, start_point))
-    right_flank <- c(substr(fasta_sequences[2*primer],end_point+1, end_point+11))
+    left_flank <- c(substr(fasta_sequences[2*primer],start_point-(flank_length-1), start_point))
+    right_flank <- c(substr(fasta_sequences[2*primer],end_point+1, end_point+flank_length))
 
     #prepare output .config file for each primer
     motif <- c(noquote(format(perf_input[primer,8])))
@@ -47,7 +52,8 @@ for(primer in 1:30)
 
     #Scan the other samples' genomes to see if there are indels that we need to include in the .config file
     
-    write.table(output_df, paste("./STRaitRazorGenotyping/config/Pyrhulla_pyrhulla_",perf_input[primer,1],".config",sep=""), 
+    write.table(output_df, paste("./STRaitRazorGenotyping/config/Pyrhulla_pyrhulla_",perf_input[primer,1],
+            "_flank",toString(flank_length),".config",sep=""), 
                                 row.names=FALSE, sep="\t",quote=FALSE)
                 
     
