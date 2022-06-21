@@ -122,7 +122,17 @@ for(sample in list_of_samples)
                         incorrect_flank_file[which(incorrect_flank_file[,"Incorrect Flank"]==flank_file[line,"5'Flank"]),"Motif Position"] -1
                 
                 num_matching_bp <- 0
-                window <- substr(incorrect_fasta_reference, motif_pos_in_fasta-4, motif_pos_in_fasta-1)
+
+                #Make the 4 b.p. window start one full repetition (four full base pairs) after the first identified
+                #embedded repeat within the flanking region
+
+                #If the window contains a repeat motif, then our flank is incorrect
+
+                #Or, should the 4 b.p. window start one full repetition before?
+                #This worked empirically for Primer 23, but some incorrect forward flanks could just contain
+                #one embedded repeat motif right before the first repetition (off-by-one error...)
+                window <- substr(incorrect_fasta_reference, motif_pos_in_fasta+4, motif_pos_in_fasta+7)
+                print(window)
                 for(j in c(1:4))
                 {
                     if(substr(window,j,j)==substr(forward_repeat_motif,j,j)){
@@ -150,11 +160,15 @@ for(sample in list_of_samples)
                 
                 flank_pos_within_fasta <- str_locate(incorrect_fasta_reference,flank_file[line,"5'Flank"])[1]
                 print(flank_pos_within_fasta)
+
+                #8-incorrect flank position is used to adjust the "forward" incorrect motif position into the 
+                #"reverse"incorrect motif
                 motif_pos_in_fasta <- flank_pos_within_fasta + 
-                incorrect_flank_file[which(incorrect_flank_file[,"Reversed Incorrect Flank"]==flank_file[line,"5'Flank"]),"Motif Position"] - 1             
+                (8-incorrect_flank_file[which(incorrect_flank_file[,"Reversed Incorrect Flank"]==flank_file[line,"5'Flank"]),"Motif Position"]) - 1             
                 
                 num_matching_bp <- 0
-                window <- substr(incorrect_fasta_reference, motif_pos_in_fasta+1, motif_pos_in_fasta+4)
+                window <- substr(incorrect_fasta_reference, motif_pos_in_fasta+4, motif_pos_in_fasta+7)
+                print(window)
                 for(j in c(1:4))
                 {
                     if(substr(window,j,j)==substr(reverse_repeat_motif,j,j)){
