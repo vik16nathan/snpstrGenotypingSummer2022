@@ -4,7 +4,7 @@ Goal: to integrate and improve upon existing bioinformatics software to accurate
 
 
 # Steps to STR genotyping pipeline
-1. Initial data processing/cleaning (see Analysis.sh)
+1. Initial data processing/cleaning (done by Annika)
 2. Fasta/Fastq Input File Generation, separated by primer and sample
 3. Config file creation (see link: https://drive.google.com/file/d/1xQ2A38eSKoq75_ttMmsK4Yl4AuyFVFVQ/view?usp=sharing)
     * .config files created using multiple flanking region options often have too many flanks/incorrect flanks that contain the repeat motif
