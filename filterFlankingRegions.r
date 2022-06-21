@@ -139,7 +139,7 @@ all_flank_pairs <- expand.grid(significant_forward_flanks,
 #If we couldn't find any new flanking regions, use flanks from reference genome
 #see PERF_tsv_to_STRaitRazor_config.r
 reference_config_df <- as.data.frame(read_tsv(paste("./config/Pyrhulla_pyrhulla_Primer",
-                            primer,".config",sep="")))
+                            primer,"_flank10.config",sep="")))
 if(nrow(all_flank_pairs) == 0)
 {
     output_df <- reference_config_df
