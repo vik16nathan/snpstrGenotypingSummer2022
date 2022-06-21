@@ -8,6 +8,10 @@ Goal: to integrate and improve upon existing bioinformatics software to accurate
 2. Fasta/Fastq Input File Generation, separated by primer and sample
 3. Config file creation (see link: https://drive.google.com/file/d/1xQ2A38eSKoq75_ttMmsK4Yl4AuyFVFVQ/view?usp=sharing)
     * still a work in progress
+***Config file fixing***
+a. 
+b. 
+c. 
 4. Run STRait razor/filter output
     * runAllSTRaitRazor.sh
     * processMultipleFlanksSTRaitRazorResults.r
