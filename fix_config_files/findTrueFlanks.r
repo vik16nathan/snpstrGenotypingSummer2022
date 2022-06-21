@@ -91,7 +91,7 @@ for(row in c(1:nrow(incorrect_flanks_with_ref))) {
     } else {
          while(keep_sliding) {
             num_matching_bp <- 0
-            window <- substr(fasta_ref, (incorrect_flank_pos+1), (incorrect_flank_pos+4))
+            window <- substr(fasta_ref, (incorrect_flank_pos-4), (incorrect_flank_pos-1))
             for(j in c(1:4))
             {
                 if(substr(window,j,j)==substr(reverse_repeat_motif,j,j)){
@@ -107,8 +107,8 @@ for(row in c(1:nrow(incorrect_flanks_with_ref))) {
             }
         }
         print("True flank:")
-        print(reverse_flanking_sequence(substr(fasta_ref, (incorrect_flank_pos+1),(incorrect_flank_pos+10))))
-        true_flanks <- c(true_flanks,reverse_flanking_sequence(substr(fasta_ref, (incorrect_flank_pos+1),(incorrect_flank_pos+10))))
+        print(reverse_flanking_sequence(substr(fasta_ref, (incorrect_flank_pos-10),(incorrect_flank_pos-1))))
+        true_flanks <- c(true_flanks,reverse_flanking_sequence(substr(fasta_ref, (incorrect_flank_pos-10),(incorrect_flank_pos-1))))
     }
 }
 
