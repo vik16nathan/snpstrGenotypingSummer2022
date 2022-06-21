@@ -1,5 +1,6 @@
 # SNPSTR Genotyping
 
+**Full pipeline diagram:** https://drive.google.com/file/d/1z0RFqbo7p3CsDVEtBkatqBwpkV4fFFWB/view?usp=sharing
 Goal: to integrate and improve upon existing bioinformatics software to accurately genotype and detect STRs and SNPs within NGS data from PCR-amplified DNA, with the ultimate goal of using SNPSTRs to detect illegal animal trade.
 
 
@@ -8,7 +9,7 @@ Goal: to integrate and improve upon existing bioinformatics software to accurate
 2. Fasta/Fastq Input File Generation, separated by primer and sample
 3. Config file creation (see link: https://drive.google.com/file/d/1xQ2A38eSKoq75_ttMmsK4Yl4AuyFVFVQ/view?usp=sharing)
     * .config files created using multiple flanking region options often have too many flanks/incorrect flanks that contain the repeat motif
-    * Created four files within fix_config_files to help with this
+    * Created four files within fix_config_files to help with this, with one primer's multiple-flank config file at a time
     * Full description/order of analyses: https://docs.google.com/document/d/1SrBHJA-7HQTlyU8EoovvQSa5ho_orZcSchW9jNAJpww/edit?usp=sharing
 
 4. Run STRait razor/filter output
