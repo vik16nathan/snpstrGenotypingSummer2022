@@ -10,6 +10,7 @@ listOfSamples=("1232" "1393" "1791" "2006092" "2006174" "217" "2520669" "2599208
 
 #Read in the 
 for primer in {1..30}
+#for primer in {25..26}
 do
     for sample in "${listOfSamples[@]}"
     do
@@ -18,7 +19,7 @@ do
         primerSamplePrefix="P-pyrhulla_${sample}.sorted.duplicates_${primerArgString}"
         #Create a fasta file for each sample/primer pairing
         
-        samtools fasta ./separatedBams/$primerSamplePrefix.bam > \
+        samtools fasta ./separatedFilteredBams/$primerSamplePrefix.bam > \
         ./FastaInputs/$primerSamplePrefix.fasta
 
         
@@ -32,28 +33,16 @@ do
             Rscript extractFlankingRegions.r $primer $sample
             
             #Use uniq -c to find the most frequent flanking regions 
-            #keep header the same
             (head -n 1 ./separatedFlanks/${primerSamplePrefix}_flanks.tsv && tail -n +2 ./separatedFlanks/${primerSamplePrefix}_flanks.tsv | sort | uniq -c | sort -ru) > ./separatedFlanks/${primerSamplePrefix}_flanks_sorted.tsv
 
-            #Use the reference genome fasta file containing the actual motif to extract the 5' flanking region from forward reads
-            #and the 3' flanking region from reverse reads (so that the flanking region genotypes are unaffected by the STR)
-
-            #There should be at most two significant forward/reverse flanking region pairs for each sample, since
-            #each sample is either homozygous or heterozygous
-            
-            #Then, after doing this for all samples, choose all unique flanking region options for the .config file.
-            #This should increase robustness to mutations and insertions within the flanking regions.
-            
-            Rscript filterFlankingRegions.r $primer $sample
-            
-
-
+    
         fi        
-
-        #Combine results for each primer
-
+    done
+    #Combine results for each primer
+    Rscript filterFlankingRegions.r $primer 
 
         #Place the most signficant flanking regions in the .config file
-    done
+    
 done
+
 
