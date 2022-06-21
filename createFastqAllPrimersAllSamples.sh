@@ -8,13 +8,11 @@ do
     primerString="Primer"
     primerArgString="${primerString}${primer}"
     
-    #First, use GATK to create a .bam file for one specific primer and one specific sample
-    gatk PrintReads -I P-pyrhulla_${sample}.sorted.duplicates.bam -L ${primerArgString} -O \
-    ./STRaitRazorGenotyping/separatedBams/P-pyrhulla_${sample}.sorted.duplicates_${primerArgString}.bam
-    
     #Create a fastq file as a STRaitRazor input
+    #Only create STRaitRazor input files for .bam files in the separatedFilteredBams directory
+    #We only want to run STRaitRazor on inputs for which there are >10 reads
     
-    samtools fastq ./STRaitRazorGenotyping/separatedBams/P-pyrhulla_${sample}.sorted.duplicates_${primerArgString}.bam > \
+    samtools fastq ./STRaitRazorGenotyping/separatedFilteredBams/P-pyrhulla_${sample}.sorted.duplicates_${primerArgString}.bam > \
     ./STRaitRazorGenotyping/FastqInputs/P-pyrhulla_${sample}.sorted.duplicates_${primerArgString}.fastq
     done
 done
