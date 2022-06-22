@@ -67,16 +67,17 @@ determine_incorrect_flank <- function(repeat_motif, flank){
 determine_motif_position <- function(repeat_motif, incorrect_flank){
     
     #Input:  incorrect flank with 75% match with repeat motif 
-    #Output: integer index of where the repeat motif 
+    #Output: integer index of where the LAST occurrence of the repeat motif 
     #is located within 10 b.p. flank
 
     found <- FALSE
-    index_found <- 1
-    while(!found && (index_found + 3) <= nchar(incorrect_flank))
+    index_found <- 1 #will ultimately store the last index of the repeat motif
+    i <- 1 #iterate through flank
+    while((i + 3) <= nchar(incorrect_flank))
     {
     
         num_matching_bp <- 0
-        window <- substr(incorrect_flank, index_found, (index_found+3))
+        window <- substr(incorrect_flank, i, (i+3))
         for(j in c(1:4))
         {
             if(substr(window,j,j)==substr(repeat_motif,j,j)){
@@ -85,12 +86,10 @@ determine_motif_position <- function(repeat_motif, incorrect_flank){
         }
         if(num_matching_bp >= 3)
         {
-            found <- TRUE
+            index_found <- i
         }
-        else
-        {
-            index_found <- (index_found + 1)
-        }
+        i <- i+1
+      
     }
     print(index_found) #return index
 
@@ -112,6 +111,7 @@ config_file <- as.data.frame(read_tsv(paste(
 
 #Extract the repeat motif
 repeat_motif <- config_file[1,1]
+reverse_repeat_motif <- reverse_flanking_sequence(config_file[1,1])
 
 #Nomenclature - 5' flank = forward flank, 3' flank = reverse flank
 #Evaluate all forward flanking regions
@@ -136,10 +136,11 @@ for(reverse_flank in config_file[,4]){
 }
 
 incorrect_reverse_flank_positions <- c()
-for(flank in config_file[which(incorrect_reverse_flanks),4]){
+for(flank in config_file[which(incorrect_reverse_flanks),4]) {
     
+    reversed_flank <- reverse_flanking_sequence(flank)
     incorrect_reverse_flank_positions <- c(incorrect_reverse_flank_positions,
-        determine_motif_position(repeat_motif,flank))
+        determine_motif_position(reverse_repeat_motif,reversed_flank))
 }
 
 #reverse all 3' flanks, since they came from reverse reads
