@@ -164,7 +164,7 @@ for(sample in list_of_samples)
                 #8-incorrect flank position is used to adjust the "forward" incorrect motif position into the 
                 #"reverse"incorrect motif
                 motif_pos_in_fasta <- flank_pos_within_fasta + 
-                (8-incorrect_flank_file[which(incorrect_flank_file[,"Reversed Incorrect Flank"]==flank_file[line,"5'Flank"]),"Motif Position"]) - 1             
+                incorrect_flank_file[which(incorrect_flank_file[,"Reversed Incorrect Flank"]==flank_file[line,"5'Flank"]),"Motif Position"] - 1             
                 
                 num_matching_bp <- 0
                 window <- substr(incorrect_fasta_reference, motif_pos_in_fasta+4, motif_pos_in_fasta+7)
