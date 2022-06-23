@@ -36,7 +36,7 @@ for(primer in list_of_primers_to_include)
                     strait_razor_output <- as.data.frame(read.table(result_filename))
 
                     #Count the total number of reads for a particular primer/sample configuration
-                    #total_num_reads <- sum(strait_razor_output[,5])+sum(strait_razor_output[,6])
+                    total_num_reads <- sum(strait_razor_output[,5])+sum(strait_razor_output[,6])
                     repeat_motif <- substr(strait_razor_output[1,1],1,4)
                     #make sure to count reads only for matches that don't correspond to a flanking region insertion
                     non_inserted_alleles <- which(substr(repeat_motif,1,1) == substr(strait_razor_output[,4],1,1))
@@ -44,8 +44,6 @@ for(primer in list_of_primers_to_include)
                     
                     #Create a vector to represent "significant" alleles, with threshold as a user input
                     significant_alleles <- c()
-                    all_primers <- c(all_primers, primer)
-                    all_samples <- c(all_samples, sample)
                     for(i in c(1:nrow(strait_razor_output)))
                     {
                         genotype <- format(strait_razor_output[i,4])
@@ -95,7 +93,18 @@ for(primer in list_of_primers_to_include)
 
 #Create a boolean vector where true represents homozygous and false represents heterozygous
 all_homo_hetero <- factor(all_allele_1 == all_allele_2, labels=c("he","ho"))
+
+#sort allele 1/allele 2 such that allele 1 is always shorter than allele 2
+#This will be useful for later analyses
+for(i in c(1:length(all_allele_1))){
+    if(nchar(all_allele_1[i]) > nchar(all_allele_2[i])){
+        temp <- all_allele_1[i]
+        all_allele_1[i] <- all_allele_2[i]
+        all_allele_2[i] <- temp
+    }
+}
 output_df <- data.frame(all_primers, all_samples, all_allele_1, all_allele_2, all_homo_hetero)
 colnames(output_df) <- c("Primer", "Sample", "Allele 1", "Allele 2", "Zygosity")
 write.table(output_df, paste("strait_razor_genotypes_",threshold,"_multiple_flanks.tsv", sep=""),
             row.names=FALSE, sep="\t", quote=FALSE)
+
