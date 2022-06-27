@@ -87,7 +87,7 @@ for(i in seq(2,length(fasta_file),2)) {
     if(zygosity == "he") {
         if(!is.na(str_locate(fasta_line, allele_2)[2])) {
             allele_2_starting_positions <- c(allele_2_starting_positions, 
-                    str_locate(fasta_line, allele_2)[1])
+                    (str_locate(fasta_line, allele_2)[1] + 1))
             allele_2_ending_positions <- c(allele_2_ending_positions, 
                     str_locate(fasta_line, allele_2)[2])
 
@@ -99,7 +99,7 @@ for(i in seq(2,length(fasta_file),2)) {
 
     if(!is.na(str_locate(fasta_line, allele_1)[2])) {
             allele_1_starting_positions <- c(allele_1_starting_positions, 
-                    str_locate(fasta_line, allele_1)[1])
+                    (str_locate(fasta_line, allele_1)[1] + 1))
             allele_1_ending_positions <- c(allele_1_ending_positions, 
                     str_locate(fasta_line, allele_1)[2])
             all_allele_1_lines <- c(all_allele_1_lines, paste(">",new_allele_1_fasta_header,sep=""))
@@ -152,13 +152,11 @@ if(zygosity == "ho") {
 }
 if(zygosity == "he") {
     allele_1_output_df <- data.frame(new_allele_1_fasta_header,top_starting_positions[1],top_ending_positions[1])
-    write.table(allele_1_output_df, paste("./bedForMasking/P-pyrhulla_",sample,"_Primer",primer,"_allele_1.tsv",sep=""),
+    write.table(allele_1_output_df, paste("./bedForMasking/P-pyrhulla_",sample,"_Primer",primer,"_allele_1.bed",sep=""),
             sep="\t",quote=FALSE,row.names=FALSE,col.names=FALSE)
     
     allele_2_output_df <- data.frame(new_allele_2_fasta_header,top_starting_positions[2],top_ending_positions[2])
-    write.table(allele_2_output_df, paste("./bedForMasking/P-pyrhulla_",sample,"_Primer",primer,"_allele_2.tsv",sep=""),
+    write.table(allele_2_output_df, paste("./bedForMasking/P-pyrhulla_",sample,"_Primer",primer,"_allele_2.bed",sep=""),
             sep="\t",quote=FALSE,row.names=FALSE,col.names=FALSE)
 
 }
-
-
