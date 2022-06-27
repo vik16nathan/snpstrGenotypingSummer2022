@@ -41,7 +41,7 @@ primer <- args[1]
 #actually incorrect flanks and corresponding fasta reads
 
 incorrect_flanks_with_ref <- as.data.frame(read_tsv(
-    paste("Primer",primer,"_actual_incorrect_flanks_with_reference.tsv",sep="")))
+    paste("./actualIncorrectFlanksWithRef/Primer",primer,"_actual_incorrect_flanks_with_reference.tsv",sep="")))
 
 repeat_motif <- incorrect_flanks_with_ref[1,"Repeat Motif"]
 reverse_repeat_motif <- reverse_flanking_sequence(repeat_motif)
@@ -81,35 +81,14 @@ for(row in c(1:nrow(incorrect_flanks_with_ref))) {
                 num_matching_bp <- num_matching_bp + 1
             }
         }
+
+        #Work on indel handling within .fasta reads later to ensure that we don't stop early
+        #What I wrote before to find insertions messed everything up with P25
+        #Deal with this later
+        
         if(num_matching_bp < 3) {
-            #check for indels before fully stopping
-            #Case 1: 1 b.p. insertion
-            num_matching_bp <- 0
-            insertion_window <- substr(fasta_ref, (incorrect_flank_pos-5), (incorrect_flank_pos-2))
-                print(paste("Window:",insertion_window))
-                for(j in c(1:4))
-                {
-                if(substr(insertion_window,j,j)==substr(comparison_motif,j,j)) {
-                        num_matching_bp <- num_matching_bp + 1
-                }
-                }
-            
-            if(num_matching_bp >= 3) {
-                keep_sliding <- TRUE
-                incorrect_flank_pos <- incorrect_flank_pos-5
-            }  else {
                 keep_sliding <- FALSE   
-            }
-
-            #Case 2: deletions - how do I handle this???
-            #Work on full indel handling later
-
-            #LATER - indel handling by finding other reads with the flanking region, and then using those reads
-            #or - find a BUNCH of reads that contain a particular flanking region and then find the most common "actual"
-            #flanking region after running sliding window on all the reads
-            
-        }
-        else {
+            } else {
             incorrect_flank_pos <- incorrect_flank_pos-4
         }
     }
@@ -118,6 +97,7 @@ for(row in c(1:nrow(incorrect_flanks_with_ref))) {
     if(incorrect_flanks_with_ref[row,"F or R"]=="forward"){
         true_flank <- substr(fasta_ref, (incorrect_flank_pos-10),(incorrect_flank_pos-1))
     } else {
+        print("Flank reversed:")
         true_flank <- reverse_flanking_sequence(substr(fasta_ref, (incorrect_flank_pos-10),(incorrect_flank_pos-1)))
     }
     print(true_flank)
@@ -128,5 +108,5 @@ for(row in c(1:nrow(incorrect_flanks_with_ref))) {
 
 output_df <- data.frame(incorrect_flanks_with_ref[,c(1:2)],true_flanks,incorrect_flanks_with_ref[,"F or R"])
 colnames(output_df) <- c("Repeat Motif","Incorrect Flank","Corrected Flank","F or R")
-write.table(output_df, paste("Primer",primer,"_corrected_flanks.tsv",sep=""),sep="\t",
+write.table(output_df, paste("./correctedFlanks/Primer",primer,"_corrected_flanks.tsv",sep=""),sep="\t",
             quote=FALSE,row.names=FALSE)
