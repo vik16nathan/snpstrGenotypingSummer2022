@@ -147,7 +147,7 @@ if(zygosity == "he") {
 #Write separated .bed files with starting/ending STR positions for masking later on
 if(zygosity == "ho") {
     output_df <- data.frame(new_allele_1_fasta_header,top_starting_positions,top_ending_positions)
-    write.table(output_df, paste("./bedForMasking/P-pyrhulla_",sample,"_Primer",primer,"_allele_1.tsv",sep=""),
+    write.table(output_df, paste("./bedForMasking/P-pyrhulla_",sample,"_Primer",primer,"_allele_1.bed",sep=""),
             sep="\t",quote=FALSE,row.names=FALSE,col.names=FALSE)
 }
 if(zygosity == "he") {
@@ -158,5 +158,7 @@ if(zygosity == "he") {
     allele_2_output_df <- data.frame(new_allele_2_fasta_header,top_starting_positions[2],top_ending_positions[2])
     write.table(allele_2_output_df, paste("./bedForMasking/P-pyrhulla_",sample,"_Primer",primer,"_allele_2.bed",sep=""),
             sep="\t",quote=FALSE,row.names=FALSE,col.names=FALSE)
-
 }
+
+
+
