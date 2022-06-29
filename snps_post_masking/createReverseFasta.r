@@ -44,7 +44,7 @@ prefix <- args[1] #for naming the output file
 r1_masked_fasta <- readLines(args[2])
 print(r1_masked_fasta)
 r2_masked_fasta_lines <- c()
-for(i in c(1:length(r1_masked_fasta))){
+for(i in c(1:length(r1_masked_fasta))) {
 
     if(i %% 2 == 1) { #all odd lines have headers
         r2_masked_fasta_lines <- c(r2_masked_fasta_lines, r1_masked_fasta[i])
