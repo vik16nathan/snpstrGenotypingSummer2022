@@ -82,9 +82,24 @@ fasta_file <- readLines(
 #Iterate through every line of the fasta file
 #only even-numbered lines have reads; the odd-numbered lines are headers
 
+#Store lines for the newly-separated .fasta files by allele
+#Store R1/R2 (forward and reverse reads) in different vectors
+#so that they can be outputted in different files
+all_allele_1_R1_lines <- c()
+all_allele_1_R2_reversed_lines <- c()
+
+
+all_allele_2_R1_lines <- c()
+all_allele_2_R2_reversed_lines <- c() 
+
+#Store all old header names - needed to extract quality scores from .fastq files later on
+all_allele_1_R1_header_names <- c()
+all_allele_1_R2_reversed_header_names <- c()
+
+all_allele_2_R1_header_names <- c()
+all_allele_2_R2_reversed_header_names <- c()
+
 #Store all starting/ending positions of STRs
-all_allele_1_lines <- c() #store lines for the newly-separated .fasta files by allele
-all_allele_2_lines <- c() 
 allele_1_starting_positions <- c()
 allele_1_ending_positions <- c()
 
@@ -103,17 +118,21 @@ allele_2_ending_positions <- c()
 #Prepare the new output .fasta files.
 #Change the header of the separated fasta files to show
 #the primer, sample, and allele
-
 new_allele_1_fasta_header <- paste("Primer",primer,sep="")
 
 new_allele_2_fasta_header <- paste("Primer",primer, sep="")
 
-allele_1_output_file_name <- paste("./FastaInputs/P-pyrhulla_",
-                sample,"_Primer",primer,"_allele1.fasta",sep="")
+allele_1_R1_output_file_name <- paste("./FastaInputs/P-pyrhulla_",
+                sample,"_Primer",primer,"_allele1_R1.fasta",sep="")
 
-allele_2_output_file_name <- paste("./FastaInputs/P-pyrhulla_",
-                sample,"_Primer",primer,"_allele2.fasta",sep="")
+allele_2_R1_output_file_name <- paste("./FastaInputs/P-pyrhulla_",
+                sample,"_Primer",primer,"_allele2_R1.fasta",sep="")
 
+allele_1_R2_output_file_name <- paste("./FastaInputs/P-pyrhulla_",
+                sample,"_Primer",primer,"_allele1_R2_reversed.fasta",sep="")
+
+allele_2_R2_output_file_name <- paste("./FastaInputs/P-pyrhulla_",
+                sample,"_Primer",primer,"_allele2_R2_reversed.fasta",sep="")
 #Count the number of allele 1 lines, allele 2 lines, and stutter products
 allele_1_num <- 0
 allele_2_num <- 0
@@ -121,25 +140,44 @@ stutter_num <- 0
 num_too_small <- 0
 for(i in seq(2,length(fasta_file),2)) {
 
+    #fasta_line contains the DNA sequence in which we are looking for the STR
     fasta_line <- fasta_file[i]
     reverse_fasta_line <- reverse_sequence(fasta_line)
+    #extract the fasta header, but trimmed so that it's in the same
+    #format as the list of fastq headers
+    fasta_header <- fasta_file[i-1]
+    trimmed_fasta_header <- sub(">","",sub("/.*","",fasta_header))
+
+    #Use the fasta headers to locate whether we have a forward or reverse read.
+    forward_read <- FALSE
+    if(!is.na(str_locate(fasta_line, allele_1)[2]) || (zygosity == "he" && !is.na(str_locate(fasta_line, allele_2)[2]))) {
+        forward_read <- TRUE
+    } else if(!is.na(str_locate(reverse_fasta_line, allele_1)[2]) || (zygosity == "he" && !is.na(str_locate(reverse_fasta_line, allele_2)[2]))) {
+        forward_read <- FALSE
+    } else {
+        num_too_small <- num_too_small + 1
+        next
+    }
+
+    if(!forward_read){
+        fasta_line <- reverse_fasta_line
+    }
     #account for the possibility that we are dealing with a reverse read by switching the read from
     #3'-5' to 5'-3' and handling it the same way as we would handle a forward read
 
     #We only need to look for the 5'-3' orientation of the flanks once we've reversed all the reverse 
     #reads
+
     if(zygosity == "he") {
-        if(!is.na(str_locate(fasta_line, allele_2)[2]) || !is.na(str_locate(reverse_fasta_line, allele_2)[2])) {
+
+        if(!is.na(str_locate(fasta_line, allele_2)[2])) {
             #Make sure flanking regions are correct and that we aren't dealing with a stutter product
             #Discard any reads that do not have an EXACT match with one of the flanking regions
             #At some point, make this robust to a small amount of mutation
 
-            #Note off-by-one and that we're using 11 and 2 rather than 10 and 1
+            #Note off-by-one and that we're using 9 and 0 rather than 10 and 1
             #This is because the indices used for masking need to be one b.p.
             #further than the actual locations (since they aren't masked)
-            if(!is.na(str_locate(reverse_fasta_line, allele_2)[2])){
-                fasta_line <- reverse_fasta_line
-            }
 
             allele_2_start <- str_locate(fasta_line, allele_2)[1] - 1
             allele_2_end <- str_locate(fasta_line, allele_2)[2]
@@ -147,27 +185,34 @@ for(i in seq(2,length(fasta_file),2)) {
                                         allele_2_start)
             fasta_reverse_flank <- substr(fasta_line, allele_2_end + 1, 
                                         allele_2_end + 10)
-
+            
+            
             if(fasta_forward_flank %in% all_forward_flanks && 
                 fasta_reverse_flank %in% all_reverse_flanks) {
                         allele_2_num <- allele_2_num + 1
+                        #append to the list of starting positions
                         allele_2_starting_positions <- c(allele_2_starting_positions, 
-                                                        allele_2_start)
+                                                    allele_2_start)
                         allele_2_ending_positions <- c(allele_2_ending_positions, 
-                                                        allele_2_end)
+                                                    allele_2_end)
+                        
+                        
                 } else { stutter_num <- stutter_num + 1 }
-
-            all_allele_2_lines <- c(all_allele_2_lines, paste(">",new_allele_2_fasta_header,sep=""))
-            all_allele_2_lines <- c(all_allele_2_lines, fasta_line)
+            if(forward_read) {
+                all_allele_2_R1_header_names <- c(all_allele_2_R1_header_names, trimmed_fasta_header)
+                all_allele_2_R1_lines <- c(all_allele_2_R1_lines, paste(">",new_allele_2_fasta_header,sep=""))
+                all_allele_2_R1_lines <- c(all_allele_2_R1_lines, fasta_line)
+            } else {
+                all_allele_2_R2_reversed_header_names <- c(all_allele_2_R2_reversed_header_names, trimmed_fasta_header)
+                all_allele_2_R2_reversed_lines <- c(all_allele_2_R2_reversed_lines, paste(">",new_allele_2_fasta_header,sep=""))
+                all_allele_2_R2_reversed_lines <- c(all_allele_2_R2_reversed_lines, fasta_line)
+            }
             next
         } 
     }
 
-    if(!is.na(str_locate(fasta_line, allele_1)[2]) || !is.na(str_locate(reverse_fasta_line, allele_1)[2])) {
+    if(!is.na(str_locate(fasta_line, allele_1)[2])) {
 
-            if(!is.na(str_locate(reverse_fasta_line, allele_1)[2])){
-                fasta_line <- reverse_fasta_line
-            }
             allele_1_start <- str_locate(fasta_line, allele_1)[1] - 1
             allele_1_end <- str_locate(fasta_line, allele_1)[2]
             fasta_forward_flank <- substr(fasta_line, allele_1_start - 9, 
@@ -183,10 +228,15 @@ for(i in seq(2,length(fasta_file),2)) {
                         allele_1_ending_positions <- c(allele_1_ending_positions, 
                                                         allele_1_end)
             }
-
-            all_allele_1_lines <- c(all_allele_1_lines, paste(">",new_allele_1_fasta_header,sep=""))
-            all_allele_1_lines <- c(all_allele_1_lines, fasta_line)
-    
+             if(forward_read) {
+                all_allele_1_R1_header_names <- c(all_allele_1_R1_header_names, trimmed_fasta_header)
+                all_allele_1_R1_lines <- c(all_allele_1_R1_lines, paste(">",new_allele_1_fasta_header,sep=""))
+                all_allele_1_R1_lines <- c(all_allele_1_R1_lines, fasta_line)
+            } else {
+                all_allele_1_R2_reversed_header_names <- c(all_allele_1_R2_reversed_header_names, trimmed_fasta_header)
+                all_allele_1_R2_reversed_lines <- c(all_allele_1_R2_reversed_lines, paste(">",new_allele_1_fasta_header,sep=""))
+                all_allele_1_R2_reversed_lines <- c(all_allele_1_R2_reversed_lines, fasta_line)
+            }
         } else {
             num_too_small <- num_too_small + 1
         }
@@ -221,12 +271,22 @@ if(zygosity == "he") {
 #frequencies for starting/ending positions with frequency vectors
 #write separated fasta files for each allele
 
-writeLines(all_allele_1_lines, allele_1_output_file_name)
+writeLines(as.character(all_allele_1_R1_header_names), paste("./R1R2headerLists/",sample,"_",primer,"_1_R1.lst",sep=""))
+writeLines(as.character(all_allele_1_R1_lines), allele_1_R1_output_file_name)
+
+writeLines(as.character(all_allele_1_R2_reversed_header_names), paste("./R1R2headerLists/",sample,"_",primer,"_1_R2.lst",sep=""))
+writeLines(as.character(all_allele_1_R2_reversed_lines), allele_1_R2_output_file_name)
+
 if(zygosity == "he") {
-    writeLines(all_allele_2_lines, allele_2_output_file_name)
-}
+    writeLines(as.character(all_allele_2_R1_header_names), paste("./R1R2headerLists/",sample,"_",primer,"_2_R1.lst",sep=""))
+    writeLines(as.character(all_allele_2_R1_lines), allele_2_R1_output_file_name)
+
+    writeLines(as.character(all_allele_2_R2_reversed_header_names), paste("./R1R2headerLists/",sample,"_",primer,"_2_R2.lst",sep=""))
+    writeLines(as.character(all_allele_2_R2_reversed_lines), allele_2_R2_output_file_name)
+} 
 
 #Write separated .bed files with starting/ending STR positions for masking later on
+
 if(zygosity == "ho") {
     output_df <- data.frame(new_allele_1_fasta_header,top_starting_positions,top_ending_positions)
     write.table(output_df, paste("./bedForMasking/P-pyrhulla_",sample,"_Primer",primer,"_allele_1.bed",sep=""),
