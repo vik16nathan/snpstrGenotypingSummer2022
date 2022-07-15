@@ -52,34 +52,40 @@ determine_incorrect_flank_and_next_window_position <- function(repeat_motif, ext
 
     #Create a boolean to represent whether or not we have found
     #the repeat motif in the flanking region
-    found <- FALSE
-    i <- 1
-    while(!found && (i + 4) <= nchar(extended_flank))
-    {
-        print(substr(extended_flank,i,i+4))
-        if(compare_five_bp_with_motif(repeat_motif, 
-            substr(extended_flank,i,i+4) != -1)) {
-            found <- TRUE
-            return(i+compare_five_bp_with_motif(repeat_motif, 
-            substr(extended_flank,i,i+4)))
+
+    #Look at everything until the last four base pairs
+
+    #Edge case - 0.3 at the end (b.p. 11-13 of extended flank)
+    num_matching_3_bp <- 0
+    original_flank_len <- 10
+    for(i in c(1:3)) {
+        if(substr(extended_flank, original_flank_len + i, original_flank_len + i) == 
+        substr(repeat_motif, i+1, i+1))  {
+            num_matching_3_bp <- num_matching_3_bp + 1
         }
     }
-    #edge case: the last four b.p. of the extended flank contain the 
-    #repeat motif
-    if((i+3) == nchar(extended_flank)) {
-
-        num_matching_bp <- 0
-        window <- substr(extended_flank, i, (i+3))
-        for(j in c(1:4))
-        {
-            if(substr(window,j,j)==substr(repeat_motif,j,j)){
-                num_matching_bp <- num_matching_bp + 1
-            }
+    if(num_matching_3_bp == 3) {
+        return(-1) #when we add three base pairs to the end of the flank, if these last
+        #three base pairs are a "0.3" at the end of the STR, then they will be detected
+        #as an "incorrect" embedded flanking motif. However, they are fully normal, so
+        #we should return -1 to indicate that no further processing of the flank is needed.
+    }
+    #ITERATE BACKWARDS!! Start at last possible occurrence of embedded motif
+    found <- FALSE
+    i <- nchar(extended_flank) - 3
+    #Fix the flank if there's a 3/4 match with repeat motif
+    if(determine_four_bp_similarity(substr(extended_flank,i,i+3),repeat_motif) == 4) {
+        return(i+4)
+    }
+    i <- i - 1
+    while(!found && i >= 0)
+    {
+        print(substr(extended_flank,i,i+4))
+        if(compare_five_bp_with_motif(substr(extended_flank,i,i+4), repeat_motif) != -1) {
+            found <- TRUE
+            return(i+compare_five_bp_with_motif(substr(extended_flank,i,i+4), repeat_motif))
         }
-        if(num_matching_bp >= 3)
-        {
-            return(i+4)
-        }
+        i <- i - 1
     }
     return(-1)
 
@@ -127,6 +133,24 @@ deletion_found <- function(three_bp, repeat_motif, list_of_indices) {
         return(FALSE)
     }
 }
+
+determine_four_bp_similarity <- function(four_bp_window, repeat_motif)  {
+
+    num_matching_bp <- 0
+    for(j in c(1:4))
+    {
+        if(substr(four_bp_window,j,j)==substr(repeat_motif,j,j)){
+            num_matching_bp <- num_matching_bp + 1
+        }
+    }
+    if(num_matching_bp >= 3) {
+        print("window with no indels found")
+        return(4)
+    } else {
+        return(-1)
+    }
+}
+
 compare_five_bp_with_motif <- function(five_bp, repeat_motif) {
 
     #Input: Five base pairs that could contain the repeat motif
@@ -136,17 +160,12 @@ compare_five_bp_with_motif <- function(five_bp, repeat_motif) {
     #have been found.
 
     #Case 1: no indels (simplest case)
-    num_matching_bp <- 0
-    window <- substr(five_bp, 1, 4)
-    for(j in c(1:4))
-    {
-        if(substr(window,j,j)==substr(repeat_motif,j,j)){
-            num_matching_bp <- num_matching_bp + 1
-        }
-    }
-    if(num_matching_bp >= 3) {
+
+    four_bp_similarity <- determine_four_bp_similarity(substr(five_bp,1,4), repeat_motif)
+    if(four_bp_similarity == 4) {
         return(4)
-    } #Note: this also takes care of case 3d: deletion of 
+    }
+    #Note: this also takes care of case 3d: deletion of 
     #b.p. 4 of motif (since there will be a 3/4 match nonetheless)
     
     #Case 2: insertion
@@ -158,6 +177,7 @@ compare_five_bp_with_motif <- function(five_bp, repeat_motif) {
         insertion_found(five_bp, repeat_motif, c(1,3,4,5)) ||
         insertion_found(five_bp, repeat_motif, c(1,2,4,5)) || 
         insertion_found(five_bp, repeat_motif, c(1,2,3,5))) {
+            print("insertion found")
             return(5)
     }
 
@@ -167,9 +187,12 @@ compare_five_bp_with_motif <- function(five_bp, repeat_motif) {
     #Case 3c: deletion at b.p. 3
     #Case 3d: already handled
     three_bp <- substr(five_bp,1,3) 
+    #print(paste("Three bp:", three_bp))
+    #print(paste("Repeat motif:", repeat_motif))
     if( deletion_found(three_bp, repeat_motif, c(2:4)) ||
        deletion_found(three_bp, repeat_motif, c(1,3,4)) ||
        deletion_found(three_bp, repeat_motif, c(1,2,4)) ) {
+        print("deletion found")
         return(3)
     }
     return(-1)
@@ -186,7 +209,7 @@ primer <- args[1]
 
 #Load in the .config file
 config_file <- as.data.frame(read_tsv(paste(
-    "./config/Pyrhulla_pyrhulla_Primer",primer,
+    "./config/beforeSlidingWindow/Pyrhulla_pyrhulla_Primer",primer,
     "_multiple_flanks.config",sep="")))
 
 #Extract the repeat motif
@@ -251,31 +274,29 @@ for(sample in list_of_samples)
                 #take three b.p. after the flank to account for incomplete repeat motif inclusions 
                 extended_forward_flank <- substr(incorrect_fasta_reference, 
                                 flank_pos_within_fasta, flank_pos_within_fasta+12)
+                
+                #extract the position of the next window within the extended flank
                 next_window_pos <- determine_incorrect_flank_and_next_window_position(
                     forward_repeat_motif, extended_forward_flank)
+                
+                #Edge case - deletion 
                 print(paste("Next window pos:", next_window_pos))
                 if(next_window_pos != -1) {
                     
-                    next_five_bp <- substr(incorrect_fasta_reference, next_window_pos, next_window_pos+4)
-                    if(compare_five_bp_with_motif(next_five_bp, forward_repeat_motif)) {
+                    #extract the position of the next window within the fasta (not the flank)
+                    next_window_pos_in_fasta <- (flank_pos_within_fasta + next_window_pos - 1)
+                    next_four_bp <- substr(incorrect_fasta_reference, next_window_pos_in_fasta, next_window_pos_in_fasta+3)
+                    print(paste("Next four bp:", next_four_bp))
+                    print(determine_four_bp_similarity(next_four_bp, forward_repeat_motif) == 4 )
+                    if ( determine_four_bp_similarity(next_four_bp, forward_repeat_motif) == 4 ) {
                         print("Truly incorrect forward flank found after looking through fasta:")
                         print(flank_file[line,"5'Flank"])
                         
                         incorrect_forward_flanks <- c(incorrect_forward_flanks, extended_forward_flank)
                         incorrect_forward_flank_positions <- c(incorrect_forward_flank_positions, 
-                            flank_pos_within_fasta+next_window_pos-1)
-                    }
-
-                    #Note that we could have skipped a previous deletion, since a deletion of b.p. #4
-                    #in the motif is viewed as a 3/4 match with a 4 b.p. region
-                    next_five_bp_minus_one <- substr(incorrect_fasta_reference, next_window_pos-1, next_window_pos+3) 
-                     if(compare_five_bp_with_motif(next_five_bp_minus_one, forward_repeat_motif)) {
-                        print("Truly incorrect forward flank found after looking through fasta:")
-                        print(flank_file[line,"5'Flank"])
+                            next_window_pos_in_fasta)
                         
-                        incorrect_forward_flanks <- c(incorrect_forward_flanks, extended_forward_flank)
-                        incorrect_forward_flank_positions <- c(incorrect_forward_flank_positions, flank_pos_within_fasta+next_window_pos-2)
-                    }
+                    } 
                 }
                  #Remove forward flank once we've determined whether it's incorrect or not
                  forward_flanks_remaining <- forward_flanks_remaining[-which(
@@ -294,29 +315,29 @@ for(sample in list_of_samples)
                 #take three b.p. after the flank to account for incomplete repeat motif inclusions 
                 extended_reverse_flank <- substr(incorrect_fasta_reference, 
                                 flank_pos_within_fasta, flank_pos_within_fasta+12)
+                
+                #extract the position of the next window within the extended flank
                 next_window_pos <- determine_incorrect_flank_and_next_window_position(
                     reverse_repeat_motif, extended_reverse_flank)
                 print(paste("Next window pos:", next_window_pos))
                 if(next_window_pos != -1) {
-                    next_five_bp <- substr(incorrect_fasta_reference, next_window_pos, next_window_pos+4)
-                    if(compare_five_bp_with_motif(next_five_bp, reverse_repeat_motif)) {
+                    
+                    #extract the position of the next window within the fasta (not the flank)
+                    next_window_pos_in_fasta <- (flank_pos_within_fasta + next_window_pos - 1)
+                    next_four_bp <- substr(incorrect_fasta_reference, next_window_pos_in_fasta,
+                                            next_window_pos_in_fasta+3)
+                    print(paste("Next four bp:",next_four_bp))
+                    print(paste("Reverse repeat motif:", reverse_repeat_motif))
+                    print(determine_four_bp_similarity(next_four_bp, reverse_repeat_motif))
+                    if ( determine_four_bp_similarity(next_four_bp, reverse_repeat_motif) == 4 ) {
                         print("Truly incorrect reverse flank found after looking through fasta:")
                         print(flank_file[line,"5'Flank"])
                         reverse_flanks_remaining <- reverse_flanks_remaining[-which(
                                     reverse_flanks_remaining==flank_file[line,"5'Flank"])]
                         incorrect_reverse_flanks <- c(incorrect_reverse_flanks, extended_reverse_flank)
-                        incorrect_reverse_flank_positions <- c(incorrect_reverse_flank_positions, next_window_pos)
-                    }
-                    #Note that we could have skipped a previous deletion, since a deletion of b.p. #4
-                    #in the motif is viewed as a 3/4 match with a 4 b.p. region
-                    next_five_bp_minus_one <- substr(incorrect_fasta_reference, next_window_pos-1, next_window_pos+3) 
-                     if(compare_five_bp_with_motif(next_five_bp_minus_one, reverse_repeat_motif)) {
-                        print("Truly incorrect reverse flank found after looking through fasta:")
-                        print(flank_file[line,"5'Flank"])
+                        incorrect_reverse_flank_positions <- c(incorrect_reverse_flank_positions, next_window_pos_in_fasta)
                         
-                        incorrect_forward_flanks <- c(incorrect_reverse_flanks, extended_reverse_flank)
-                        incorrect_forward_flank_positions <- c(incorrect_reverse_flank_positions, flank_pos_within_fasta+next_window_pos-2)
-                    }
+                    } 
                 }
                 #Remove reverse flank once we've determined whether it's incorrect or not
                 reverse_flanks_remaining <- reverse_flanks_remaining[-which(
