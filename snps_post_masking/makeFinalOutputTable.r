@@ -2,25 +2,31 @@ library(readr)
 library(stringr)
 library(dplyr)
 
+find_mode <- function(x) {
+  u <- unique(x)
+  tab <- tabulate(match(x, u))
+  u[tab == max(tab)]
+}
+
 #Load in the intermediate pre-processed output table from processFinalVariantTable.r
-intermediate_table <- as.data.frame(read_tsv("P_pyrhulla-SNPs_masked.table_no_STR_alleles_intermediate.table"))
+intermediate_table <- as.data.frame(read_tsv("P_pyrhulla-SNPs_masked.table_no_STR_alleles_intermediate.table", show_col_types=FALSE))
 
 list_of_samples <- c("1232","1393","1791","2006092","2006174",
                     "217","2520669","2599208","34896","34966")
 
 #Load in the STR genotype table
-str_table <- as.data.frame(read_tsv("strait_razor_genotypes_0.15_multiple_flanks.tsv"))
+str_table <- as.data.frame(read_tsv("strait_razor_genotypes_0.15_multiple_flanks.tsv", show_col_types=FALSE))
 
 #Iterate through every single primer
 for(primer in c(1:30)) {
-
+#for(primer in c(12)) {
     #Load in the repeat motif
     config_filename <- paste(
     "./config/Pyrhulla_pyrhulla_Primer",primer,
     "_multiple_flanks.config",sep="")
 
     if(file.exists(config_filename)) {
-        config_file <- as.data.frame(read_tsv(config_filename))
+        config_file <- as.data.frame(read_tsv(config_filename, show_col_types=FALSE))
     } else {
         print(paste("Config file not found for primer", primer))
         next
@@ -51,9 +57,15 @@ for(primer in c(1:30)) {
     repeat_motifs <- rep(repeat_motif, 2)
     
     overall_primer_output_data_frame <- c()
+    #Store all STR starting positions - note that this is sometimes incorrectly computed,
+    #so we need to use the starting position that's most common among all samples
+    #for a particular primer.
+    all_str_starting_positions <- c()
+
     #Iterate through each sample
     for(sample in list_of_samples) {
 
+        #print(paste("Sample:", sample))
         #Create a vector corresponding to the starting and ending positions of the longer STR
         #This will allow us to filter out any "SNPs" within the STR
 
@@ -72,8 +84,15 @@ for(primer in c(1:30)) {
         sample_STR_zygosity <- intermediate_table[possible_snp_rows[1],paste0(sample,"_STR_zygosity")]
 
         #Get the bed file for allele 1
-        primer_sample_allele_1_bed_file <- read_tsv(paste0("./bedForMasking/P-pyrhulla_",sample,"_",primer_string,"_allele_1.bed"),col_names=FALSE)
+        primer_sample_allele_1_bed_file <- read_tsv(paste0("./bedForMasking/P-pyrhulla_",sample,"_",primer_string,"_allele_1.bed"),
+                                                    col_names=FALSE, show_col_types = FALSE)
+        if(any(is.na(primer_sample_allele_1_bed_file))) {
+            print(paste("NAs in allele 1 .bed file for primer", primer, "and sample", sample))
+            next
+        }
         str_starting_position <- primer_sample_allele_1_bed_file[2]
+        all_str_starting_positions <- c(all_str_starting_positions, str_starting_position)
+
         primer_sample_allele_1_length <- primer_sample_allele_1_bed_file[3] - primer_sample_allele_1_bed_file[2]
         primer_sample_allele_1_decimal_length <- paste0(floor(primer_sample_allele_1_length/4), ".", 
                                                 (primer_sample_allele_1_length %% 4) )
@@ -83,7 +102,12 @@ for(primer in c(1:30)) {
         
         } else {
             #Get the bed file for allele 2
-            primer_sample_allele_2_bed_file <- read_tsv(paste0("./bedForMasking/P-pyrhulla_",sample,"_",primer_string,"_allele_2.bed"),col_names=FALSE)
+            primer_sample_allele_2_bed_file <- read_tsv(paste0("./bedForMasking/P-pyrhulla_",sample,"_",primer_string,"_allele_2.bed"),
+                                                        col_names=FALSE, show_col_types = FALSE)
+            if(any(is.na(primer_sample_allele_2_bed_file))) {
+                print(paste("NAs in allele 2 .bed file for primer", primer, "and sample", sample))
+                next
+            }
             primer_sample_allele_2_length <- primer_sample_allele_2_bed_file[3] - primer_sample_allele_2_bed_file[2]
             primer_sample_allele_2_decimal_length <- paste0(floor(primer_sample_allele_2_length/4), ".", 
                                                     (primer_sample_allele_2_length %% 4) )
@@ -95,9 +119,7 @@ for(primer in c(1:30)) {
         colnames(two_row_output_df)[1] <- "Sample Name"
         colnames(two_row_output_df)[2] <- "STR Genotypes"
         colnames(two_row_output_df)[3] <- "Repeat Motif"
-
-        #fix off-by-one error
-        colnames(two_row_output_df)[4] <- paste((str_starting_position + 1), "Msat")
+        colnames(two_row_output_df)[4] <- ("Msat")
 
         #Iterate through putative SNPs
         overall_zygosity <- "ho"
@@ -143,18 +165,27 @@ for(primer in c(1:30)) {
 
         #Add a column corresponding to the overall zygosity
         two_row_output_df <- cbind(two_row_output_df, rep(overall_zygosity, 2))
+        #print(two_row_output_df)
         colnames(two_row_output_df)[ncol(two_row_output_df)] <- "inheritance"
 
         #append two-column intermediate data frame to overall data frame
         if(length(overall_primer_output_data_frame) == 0) {
             overall_primer_output_data_frame <- two_row_output_df
         } else {
-            overall_primer_output_data_frame <- bind_rows(overall_primer_output_data_frame, two_row_output_df)
+            overall_primer_output_data_frame <- bind_rows(as.data.frame(overall_primer_output_data_frame), 
+                                                          as.data.frame(two_row_output_df))
         }
     }
     #remove all NAs
     overall_primer_output_data_frame <- overall_primer_output_data_frame[, colSums(is.na(overall_primer_output_data_frame))==0]
+
+    #Find the most frequent STR starting position
+    most_frequent_STR_starting_position <- as.numeric(find_mode(all_str_starting_positions)) + 1 #correct off-by-one error
+
+    colnames(overall_primer_output_data_frame)[which(colnames(overall_primer_output_data_frame) == "Msat")] <- 
+                            paste(most_frequent_STR_starting_position, "Msat")
+    
     write.table(overall_primer_output_data_frame, paste0("./finalExcelOutputs/Primer",primer,"_SNPSTRs.tsv"),row.names=FALSE,
         quote=FALSE, sep="\t")
-    
+
 }
