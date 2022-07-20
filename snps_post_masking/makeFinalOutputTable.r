@@ -45,7 +45,6 @@ for(primer in c(1:30)) {
 
     if(length(possible_snp_rows)==0){
         print(format(paste("No SNPs found for Primer", primer)))
-        next
     }
 
     #Prepare two-row pieces of final output table for each primer
@@ -81,88 +80,104 @@ for(primer in c(1:30)) {
         primer_sample_str_genotypes <- c(str_table[str_row,"Allele 1"], str_table[str_row, "Allele 2"])
 
         #Determine STR zygosity
-        sample_STR_zygosity <- intermediate_table[possible_snp_rows[1],paste0(sample,"_STR_zygosity")]
+        sample_STR_zygosity <- str_table[str_row,"Zygosity"]
 
         #Get the bed file for allele 1
-        primer_sample_allele_1_bed_file <- read_tsv(paste0("./bedForMasking/P-pyrhulla_",sample,"_",primer_string,"_allele_1.bed"),
-                                                    col_names=FALSE, show_col_types = FALSE)
-        if(any(is.na(primer_sample_allele_1_bed_file))) {
-            print(paste("NAs in allele 1 .bed file for primer", primer, "and sample", sample))
-            next
+        allele_1_bed_file_name <- paste0("./bedForMasking/P-pyrhulla_",sample,"_",primer_string,"_allele_1.bed")
+      
+        if(!file.exists(allele_1_bed_file_name)) {
+            print(paste("Allele 1 .bed file does not exist for primer",primer,"and sample",sample,"!"))
+            
+        } else {
+            primer_sample_allele_1_bed_file <- read_tsv(allele_1_bed_file_name,
+                                                        col_names=FALSE, show_col_types = FALSE)
+            if(any(is.na(primer_sample_allele_1_bed_file))) {
+                print(paste("NAs in allele 1 .bed file for primer", primer, "and sample", sample))
+                next
+            }  
+            str_starting_position <- primer_sample_allele_1_bed_file[2]
+            all_str_starting_positions <- c(all_str_starting_positions, str_starting_position)
+            longer_STR_allele_positions <- c(primer_sample_allele_1_bed_file[2], primer_sample_allele_1_bed_file[3])
         }
-        str_starting_position <- primer_sample_allele_1_bed_file[2]
-        all_str_starting_positions <- c(all_str_starting_positions, str_starting_position)
 
-        primer_sample_allele_1_length <- primer_sample_allele_1_bed_file[3] - primer_sample_allele_1_bed_file[2]
+        primer_sample_allele_1_length <- nchar(str_table[str_row, "Allele 1"])
         primer_sample_allele_1_decimal_length <- paste0(floor(primer_sample_allele_1_length/4), ".", 
                                                 (primer_sample_allele_1_length %% 4) )
         if(sample_STR_zygosity == "ho") {
             primer_sample_str_lengths <- rep(primer_sample_allele_1_decimal_length, 2)
-            longer_STR_allele_positions <- c(primer_sample_allele_1_bed_file[2], primer_sample_allele_1_bed_file[3])
+            
         
         } else {
             #Get the bed file for allele 2
-            primer_sample_allele_2_bed_file <- read_tsv(paste0("./bedForMasking/P-pyrhulla_",sample,"_",primer_string,"_allele_2.bed"),
+            allele_2_bed_file_name <- paste0("./bedForMasking/P-pyrhulla_",sample,"_",primer_string,"_allele_2.bed")
+            if(!file.exists(allele_2_bed_file_name)) {
+                print(paste("Allele 2 .bed file does not exist for primer",primer,"and sample", sample,"!"))
+            } else {
+                     primer_sample_allele_2_bed_file <- read_tsv(allele_2_bed_file_name,
                                                         col_names=FALSE, show_col_types = FALSE)
-            if(any(is.na(primer_sample_allele_2_bed_file))) {
-                print(paste("NAs in allele 2 .bed file for primer", primer, "and sample", sample))
-                next
+                if(any(is.na(primer_sample_allele_2_bed_file))) {
+                    print(paste("NAs in allele 2 .bed file for primer", primer, "and sample", sample))
+                } 
+                longer_STR_allele_positions <- c(primer_sample_allele_2_bed_file[2], primer_sample_allele_2_bed_file[3])
             }
-            primer_sample_allele_2_length <- primer_sample_allele_2_bed_file[3] - primer_sample_allele_2_bed_file[2]
+       
+            primer_sample_allele_2_length <- nchar(str_table[str_row,"Allele 2"])
             primer_sample_allele_2_decimal_length <- paste0(floor(primer_sample_allele_2_length/4), ".", 
                                                     (primer_sample_allele_2_length %% 4) )
             primer_sample_str_lengths <- c(primer_sample_allele_1_decimal_length, primer_sample_allele_2_decimal_length)
-            longer_STR_allele_positions <- c(primer_sample_allele_2_bed_file[2], primer_sample_allele_2_bed_file[3])
         }
 
         two_row_output_df <- cbind(sample_names, primer_sample_str_genotypes, repeat_motifs, primer_sample_str_lengths)
         colnames(two_row_output_df)[1] <- "Sample Name"
         colnames(two_row_output_df)[2] <- "STR Genotypes"
         colnames(two_row_output_df)[3] <- "Repeat Motif"
-        colnames(two_row_output_df)[4] <- ("Msat")
+        colnames(two_row_output_df)[4] <- "Msat"
 
         #Iterate through putative SNPs
         overall_zygosity <- "ho"
-        for(snp_row in possible_snp_rows) {
-            #Determine the position of the SNP
-            snp_position <- intermediate_table[snp_row, "POS"]
-            #see if potential SNP is embedded within STR
-            if((snp_position >= longer_STR_allele_positions[1]) && (snp_position <= longer_STR_allele_positions[2])) {
-                print(paste("SNP/indel at position", snp_position, "is within STR"))
-                next
-            } else {
-
-                #If any of the SNPs are heterozygous, then the overall SNPSTR genotype is heterozygous
-                if(intermediate_table[snp_row, paste0(sample,"_overall_zygosity")] == "he") {
-                    overall_zygosity <- "he"
-                }
-                #Extract the reference/alternative alelles
-                ref_allele <- intermediate_table[snp_row, "REF"]
-                alt_allele <- intermediate_table[snp_row, "ALT"]
-                
-                #Create a column that will align the SNP alleles with the STRs where they are found (if any)
-                #in the output table
-                snp_position_column <- c()
-
-                #Look at which STR alleles correspond with the SNP
-                if(intermediate_table[snp_row, paste0(sample, "_STR_alleles_where_SNP_is_found")] == "0") {
-                    snp_position_column <- c("-","-")
-                } else if (intermediate_table[snp_row, paste0(sample, "_STR_alleles_where_SNP_is_found")] == "1") {
-                    if(intermediate_table[snp_row, paste0(sample, "_SNP_zygosity")] == "ho") {
-                        snp_position_column <- c(alt_allele, alt_allele)
-                    } else {
-                        snp_position_column <- c(alt_allele, "-")
-                    }
-                } else if (intermediate_table[snp_row, paste0(sample, "_STR_alleles_where_SNP_is_found")] == "2") {
-                    snp_position_column <- c("-", alt_allele)
+        if(length(possible_snp_rows) != 0) {
+            for(snp_row in possible_snp_rows) {
+                #Determine the position of the SNP
+                snp_position <- intermediate_table[snp_row, "POS"]
+                #see if potential SNP is embedded within STR
+                if(length(longer_STR_allele_positions) == 2 && !any(is.na(longer_STR_allele_positions)) &&
+                    (snp_position >= longer_STR_allele_positions[1]) && (snp_position <= longer_STR_allele_positions[2])) {
+                    print(paste("SNP/indel at position", snp_position, "is within STR"))
+                    next
                 } else {
-                    snp_position_column <- c(alt_allele, alt_allele)
-                }
-                two_row_output_df <- cbind(two_row_output_df, snp_position_column)
-                colnames(two_row_output_df)[ncol(two_row_output_df)] <- paste0(snp_position, " ",ref_allele,"->",alt_allele)
-            }
-        }
+                    #If any of the SNPs are heterozygous, then the overall SNPSTR genotype is heterozygous
+                    if(intermediate_table[snp_row, paste0(sample,"_overall_zygosity")] == "he") {
+                        overall_zygosity <- "he"
+                    }
+                    #Extract the reference/alternative alelles
+                    ref_allele <- intermediate_table[snp_row, "REF"]
+                    alt_allele <- intermediate_table[snp_row, "ALT"]
+                    
+                    #Create a column that will align the SNP alleles with the STRs where they are found (if any)
+                    #in the output table
+                    snp_position_column <- c()
 
+                    #Look at which STR alleles correspond with the SNP
+                    if(intermediate_table[snp_row, paste0(sample, "_STR_alleles_where_SNP_is_found")] == "0") {
+                        snp_position_column <- c("-","-")
+                    } else if (intermediate_table[snp_row, paste0(sample, "_STR_alleles_where_SNP_is_found")] == "1") {
+                        if(intermediate_table[snp_row, paste0(sample, "_SNP_zygosity")] == "ho") {
+                            snp_position_column <- c(alt_allele, alt_allele)
+                        } else {
+                            snp_position_column <- c(alt_allele, "-")
+                        }
+                    } else if (intermediate_table[snp_row, paste0(sample, "_STR_alleles_where_SNP_is_found")] == "2") {
+                        snp_position_column <- c("-", alt_allele)
+                    } else {
+                        snp_position_column <- c(alt_allele, alt_allele)
+                    }
+                    two_row_output_df <- cbind(two_row_output_df, snp_position_column)
+                    colnames(two_row_output_df)[ncol(two_row_output_df)] <- paste0(snp_position, " ",ref_allele,"->",alt_allele)
+                }
+            }
+        } else { #the overall zygosity is just the STR zygosity in the absence of SNPs
+            overall_zygosity <- sample_STR_zygosity
+        }
         #Add a column corresponding to the overall zygosity
         two_row_output_df <- cbind(two_row_output_df, rep(overall_zygosity, 2))
         #print(two_row_output_df)
@@ -175,6 +190,11 @@ for(primer in c(1:30)) {
             overall_primer_output_data_frame <- bind_rows(as.data.frame(overall_primer_output_data_frame), 
                                                           as.data.frame(two_row_output_df))
         }
+    }
+
+    if(length(overall_primer_output_data_frame) == 0) {
+        print(paste("No results for primer",primer))
+        next
     }
     #remove all NAs
     overall_primer_output_data_frame <- overall_primer_output_data_frame[, colSums(is.na(overall_primer_output_data_frame))==0]
