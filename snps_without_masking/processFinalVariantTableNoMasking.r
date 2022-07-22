@@ -54,7 +54,7 @@ for(sample_name in sample_names) {
 #load in STR information
 str_table <- as.data.frame(read_tsv("strait_razor_genotypes_0.15_multiple_flanks.tsv"))
 
-snp_allele_information <- as.data.frame(matrix(0,nrow(output_table),length(new_column_names)))
+snp_allele_information <- as.data.frame(matrix(-1,nrow(output_table),length(new_column_names)))
 colnames(snp_allele_information) <- new_column_names
 output_table <- cbind(output_table, snp_allele_information)
 
@@ -109,6 +109,10 @@ for(primer in c(1:30)) {
         }
         entry <- format(annotated_vcf[row, which(colnames(annotated_vcf) == sample)])
         entry_zygosity <- determine_het_0_1_genotype(entry)
+
+        #Initialize a value for STR_alleles_where_SNP_is_found: this will allow
+        #us to later determine if there was an error connecting the STR with the SNP
+
         if(entry_zygosity == "ho 0") {
           output_table[row, paste0(sample,"_SNP_zygosity")] <- "ho"
           output_table[row, paste0(sample,"_STR_alleles_where_SNP_is_found")] <- "0"
@@ -125,10 +129,9 @@ for(primer in c(1:30)) {
           if(str_zygosity == "ho") {
               output_table[row, paste0(sample,"_STR_alleles_where_SNP_is_found")] <- "1"
           } else {
-              output_table[row, paste0(sample,"_STR_alleles_where_SNP_is_found")] <- "0"
+              output_table[row, paste0(sample,"_STR_alleles_where_SNP_is_found")] <- "-1"
               #deal with he/he scenario in findSTRallelesWhereSNPisFoundFromFasta.r
           }
-
         }
       }
     }
