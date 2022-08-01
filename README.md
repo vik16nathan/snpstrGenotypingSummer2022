@@ -4,6 +4,14 @@ The scripts in this repository represent the work I've done in the past two mont
 
 The ultimate goal of this pipeline is to automate the detection of SNPSTRs for any number of samples of a particular animal species in Annika Mozer's FOGS (Forensic Genetics for Species Protection) project, which will hopefully save Annika and other researchers invaluable time. Although the current pipeline isn't perfect, it has proven to be ~80% accurate at STR genotyping for *Pyrrhula pyrrhula* and quite good at assigning SNP alternative alleles to the STR primers, samples, and alleles to which they belong, particularly for primers with lots of functioning reads. 
 
+There are three main parts of the pipeline:
+1. Processing reads prior to STRait Razor
+2. From the processed and separated reads in (1), making, improving, and using .config files containing the proper flanks to genotype STRs based on the most frequent copy numbers out of all processed reads for a primer-sample pair
+3. Merge .fastq files separated by primer, sample, and the alleles identified in (2), find SNPs that correspond to each primer, sample, and allele, and then consolidate and filter results into the desired SNPSTR table format
+
+All scripts in the final_scripts directory should be copied into one directory (with NO subdirectories); this directory should already contain the following information (also not within subdirectories):
+* A list of sample IDs (should be in the form of Species-name_sample_names.lst or any .lst file; one sample name per line and no trailing whitespace lines)
+* A set of unmerged, untrimmed Illumina MySeq reads corresponding to the PCR products in the format Species-name-${sample_number}_S1_L001_R1_001.fastq and Species-name-${sample_number}_S1_L001_R2_001.fastq
 # Steps to STR genotyping pipeline
 1. Initial data processing/cleaning (done by Annika)
 2. Fasta/Fastq Input File Generation, separated by primer and sample
