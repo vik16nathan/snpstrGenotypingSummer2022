@@ -16,6 +16,7 @@ All scripts in the final_scripts directory should be **copied into one directory
 * The .conda environment fullSNPSTREnv (to aid in downloading packages/programs needed to run everything)
     * Note: .conda was very problematic with GATK - a manual installation and alias may be needed (see instructions in Appendix below)
 
+
 # To run the full SNPSTR Pipeline:
 1. ./processReadsBeforeSTRaitRazor.sh $speciesPrefix $referenceGenome $sampleListFile (look within the process_reads_before_strait_razor subdirectory within GitLab)
 2. ./makeConfigAndRunAllSTRaitRazor.sh $referenceGenome $sampleListFile (within config_and_strait_razor directory)
@@ -38,13 +39,14 @@ Let . be the working directory.
 * PERF on the reference genome sometimes produces false flanks
     * Problematic output files to look at: ./config/PrimerX_flank10.config
     * Files to be edited: PrimerRef_perf.tsv (maybe trying to fix this by hand based on the 30 lines in the reference genome would eliminate some errors that sliding window could cause. Sliding window should be fixing these issues, but it's nice to have an extra built-in check beforehand)
+    * Need to create PrimerRef_fixed.bed anyways for makeFinalOutputTable.r (might as well fix PrimerRef_perf.tsv and then use this to make PrimerRef_fixed.bed)
 
 * There's no indel handling within sliding window, and no guarantee that the first read that contains the flank of interest doesn't have missing data (see logic in findReferencesForIncorrectFlanks.r - the moment we find a read with an incorrect flank, we use it as our reference for sliding window without considering any other options; we could be choosing a bad read)
     * Problematic output files: ./config/PrimerX_multiple_flanks.config
-    * Scripts to be edited: findReferencesForIncorrectFlanks.r (to find multiple possible reads that contain a flank); findTrueFlanks.r (with indel handling)
-
+    * Scripts to be edited: findReferencesForIncorrectFlanks.r (to find multiple possible reads that contain a flank); findTrueFlanks.r (with indel handling - see old/incorrect work for some functions that could maybe help with this)
+    
 * Determining STR and SNP zygosity using a certain threshold for the proportion of reads
-* Ideally - determine this proportion (in place of 0.15) based on what works best for *many* different samples (copy the script you wrote from waay back in here)
+    * Ideally - determine this proportion (in place of 0.15) based on what works best for *many* different samples (copy the script you wrote from waay back in here)
     * Problematic output files: strait_razor_genotypes_0.15_multiple_flanks.tsv
     * Files to be edited: 
         * STR zygosity: last line of makeConfigAndRunSTRaitRazor.sh
@@ -55,6 +57,21 @@ Let . be the working directory.
 * Not all reads are the same length after merging, meaning that GATK finds many STR pieces along with SNPs
     * Problematic output files: ./FastqInputs/${sample}_Primer${primer}_allele${allele}_merged.fastq
     * Ways to fix this: Filter out all lines in the above file(s) that are below a certain length, or find the most common read length in these files and extract only reads with this read length 
-    
+
+* Conda and R - Might need to manually install/update R within the conda environment, and install R packages within R console within the .conda environment
+    * 1. conda activate fullSNPSTREnv
+    * 2. Type "R" into the terminal
+    * 3. Within the R console: type install.packages("package_name") for any packages that claim to not be installed
+
 
 # Old/Incorrect Work
+* In fix_config_files: findTrueIncorrectFlanksWithReferences.r	- this was my first attempt at **indel handling**, and there are functions that involve a five base-pair window to determine whether or not our sliding window is the 4 b.p. motif plus or minus a base pair from a 1 b.p. indel. The issue is that four base pairs is so small that there are many windows that are, by chance, one base pair away from being the correct window. Also, findTrueFlanks.r is where sliding window is *actually* used to fix the flanks, so this is what needed to be fixed.
+* masking directory: A complete, utter, and irredeemable disaster. Didn't merge reads beforehand, and didn't realize that the 250 b.p. cutoff for Illumina MiSeq reads meant that the forward and reverse reads have different STR starting/ending positions (basically this is all wrong and also way too time-consuming since I used .fasta inputs and searched for headers rather than using .fastq inputs in the FastqInputs directory.)
+* snps_post_masking - didn't work because masking didn't work. However, a lot of the logic was reused in the final_scripts/snps_with_merging subdirectories
+
+# Installing GATK by hand
+1. https://github.com/broadinstitute/gatk/releases - download .zip file, unzip it, copy unzipped gatk-4.2.6.1 into home directory (~) 
+    * Note: check for updates!
+2. Edit ~/.bashrc and add the following line: alias gatk='~/gatk-4.2.6.1/gatk'
+3. Calling gatk will now invoke the version on your machine
+
