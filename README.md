@@ -31,10 +31,30 @@ All scripts in the final_scripts directory should be **copied into one directory
 
 The final output tables should be stored in the finalExcelOutputs subdirectory within the main working directory. Each table contains SNPs and STRs for one primer and all samples that were able to be genotyped (in .tsv format). These tables closely resemble the format that needs to be uploaded to the FOGS database.
 
-# BIG ISSUES
+# Issues
+
+Let . be the working directory.
+
+* PERF on the reference genome sometimes produces false flanks
+    * Problematic output files to look at: ./config/PrimerX_flank10.config
+    * Files to be edited: PrimerRef_perf.tsv (maybe trying to fix this by hand based on the 30 lines in the reference genome would eliminate some errors that sliding window could cause. Sliding window should be fixing these issues, but it's nice to have an extra built-in check beforehand)
+
+* There's no indel handling within sliding window, and no guarantee that the first read that contains the flank of interest doesn't have missing data (see logic in findReferencesForIncorrectFlanks.r - the moment we find a read with an incorrect flank, we use it as our reference for sliding window without considering any other options; we could be choosing a bad read)
+    * Problematic output files: ./config/PrimerX_multiple_flanks.config
+    * Scripts to be edited: findReferencesForIncorrectFlanks.r (to find multiple possible reads that contain a flank); findTrueFlanks.r (with indel handling)
+
 * Determining STR and SNP zygosity using a certain threshold for the proportion of reads
-* There's barely any indel handling within the .config file generation process
+* Ideally - determine this proportion (in place of 0.15) based on what works best for *many* different samples (copy the script you wrote from waay back in here)
+    * Problematic output files: strait_razor_genotypes_0.15_multiple_flanks.tsv
+    * Files to be edited: 
+        * STR zygosity: last line of makeConfigAndRunSTRaitRazor.sh
+            * Rscript getSTRaitRazorGenotypes.r 0.15 - replace 0.15 with percentage of all STRait razor genotypes required for an allele to be identified as "significant" (we identified 0.15 as the ideal proportion based on one dataset, but this may not be consistent with other datasets)
+            * Keep running excel comparison with STRait razor genotypes generated with various thresholds (see note under part (2) of running the main pipeline)
+
+
 * Not all reads are the same length after merging, meaning that GATK finds many STR pieces along with SNPs
+    * Problematic output files: ./FastqInputs/${sample}_Primer${primer}_allele${allele}_merged.fastq
+    * Ways to fix this: Filter out all lines in the above file(s) that are below a certain length, or find the most common read length in these files and extract only reads with this read length 
+    
 
-# SMALLER ISSUES
-
+# Old/Incorrect Work
