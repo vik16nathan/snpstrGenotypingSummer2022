@@ -1,6 +1,6 @@
 # SNPSTR Genotyping
 
-The scripts in this repository represent the work I've done in the past two months to streamline the process of jointly genotyping SNPs and STRs contained with roughly 30 forward and reverse primers, where each set of forward and reverse primers represents a 300 b.p. region where a STR and possibly multiple SNPs are found.
+The scripts in this repository represent the work I've done in the past two and a half months to streamline the process of jointly genotyping SNPs and STRs contained with roughly 30 forward and reverse primers, where each set of forward and reverse primers represents a 300 b.p. region where a STR and possibly multiple SNPs are found.
 
 The ultimate goal of this pipeline is to automate the detection of SNPSTRs for any number of samples of a particular animal species in Annika Mozer's FOGS (Forensic Genetics for Species Protection) project, which will hopefully save Annika and other researchers invaluable time. Although the current pipeline isn't perfect, it has proven to be ~80% accurate at STR genotyping for *Pyrrhula pyrrhula* and quite good at assigning SNP alternative alleles to the STR primers, samples, and alleles to which they belong, particularly for primers with lots of functioning reads. 
 
@@ -10,8 +10,12 @@ There are three main parts of the pipeline:
 3. Merge .fastq files separated by primer, sample, and the alleles identified in (2), find SNPs that correspond to each primer, sample, and allele, and then consolidate and filter results into the desired SNPSTR table format
 
 All scripts in the final_scripts directory should be copied into one directory (with NO subdirectories); this directory should already contain the following information (also not within subdirectories):
-* A list of sample IDs (should be in the form of Species-name_sample_names.lst or any .lst file; one sample name per line and no trailing whitespace lines)
-* A set of unmerged, untrimmed Illumina MySeq reads corresponding to the PCR products in the format Species-name-${sample_number}_S1_L001_R1_001.fastq and Species-name-${sample_number}_S1_L001_R2_001.fastq
+* A list of sample IDs (should be in the form of speciesPrefix_sample_names.lst or any .lst file; one sample name per line and no trailing whitespace lines)
+* A set of unmerged, untrimmed Illumina MySeq reads corresponding to the PCR products in the format speciesPrefix-${sample_number}_S1_L001_R1_001.fastq and Species-name-${sample_number}_S1_L001_R2_001.fastq (make sure to also remember what speciesPrefix is!!)
+* A reference file containing a sequence for each primer (in .fasta file format)
+* The .conda environment fullSNPSTREnv (to aid in downloading packages/programs needed to run everything)
+    * Note: .conda was very problematic with GATK - a manual installation and alias may be needed (see instructions in Appendix below)
+
 # Steps to STR genotyping pipeline
 1. Initial data processing/cleaning (done by Annika)
 2. Fasta/Fastq Input File Generation, separated by primer and sample
