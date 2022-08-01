@@ -16,7 +16,7 @@ All scripts in the final_scripts directory should be **copied into one directory
 * The .conda environment fullSNPSTREnv (to aid in downloading packages/programs needed to run everything)
     * Note: .conda was very problematic with GATK - a manual installation and alias may be needed (see instructions in Appendix below)
 
-#To run the full SNPSTR Pipeline:
+# To run the full SNPSTR Pipeline:
 1. ./processReadsBeforeSTRaitRazor.sh $speciesPrefix $referenceGenome $sampleListFile (look within the process_reads_before_strait_razor subdirectory within GitLab)
 2. ./makeConfigAndRunAllSTRaitRazor.sh $referenceGenome $sampleListFile (within config_and_strait_razor directory)
     * Note: there are some leftover R scripts and Jupyter Notebooks in the main directory of the repository that allow an organized comparison of STR genotypes and excel table genotypes for samples with manually-computed genotypes. The order of these scripts is:
@@ -31,10 +31,10 @@ All scripts in the final_scripts directory should be **copied into one directory
 
 The final output tables should be stored in the finalExcelOutputs subdirectory within the main working directory. Each table contains SNPs and STRs for one primer and all samples that were able to be genotyped (in .tsv format). These tables closely resemble the format that needs to be uploaded to the FOGS database.
 
-#BIG ISSUES
+# BIG ISSUES
 * Determining STR and SNP zygosity using a certain threshold for the proportion of reads
 * There's barely any indel handling within the .config file generation process
 * Not all reads are the same length after merging, meaning that GATK finds many STR pieces along with SNPs
 
-#SMALLER ISSUES
+# SMALLER ISSUES
 
