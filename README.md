@@ -9,37 +9,32 @@ There are three main parts of the pipeline:
 2. From the processed and separated reads in (1), making, improving, and using .config files containing the proper flanks to genotype STRs based on the most frequent copy numbers out of all processed reads for a primer-sample pair
 3. Merge .fastq files separated by primer, sample, and the alleles identified in (2), find SNPs that correspond to each primer, sample, and allele, and then consolidate and filter results into the desired SNPSTR table format
 
-All scripts in the final_scripts directory should be copied into one directory (with NO subdirectories); this directory should already contain the following information (also not within subdirectories):
+All scripts in the final_scripts directory should be **copied into one directory** (with NO subdirectories); this working directory should already contain the following inputs (also not within subdirectories):
 * A list of sample IDs (should be in the form of speciesPrefix_sample_names.lst or any .lst file; one sample name per line and no trailing whitespace lines)
-* A set of unmerged, untrimmed Illumina MySeq reads corresponding to the PCR products in the format speciesPrefix-${sample_number}_S1_L001_R1_001.fastq and Species-name-${sample_number}_S1_L001_R2_001.fastq (make sure to also remember what speciesPrefix is!!)
+* A set of unmerged, untrimmed Illumina MySeq reads corresponding to the PCR products in the format speciesPrefix-${sample_number}_S1_L001_R1_001.fastq and speciesPrefix-${sample_number}_S1_L001_R2_001.fastq (make sure to also remember what speciesPrefix is!!)
 * A reference file containing a sequence for each primer (in .fasta file format)
 * The .conda environment fullSNPSTREnv (to aid in downloading packages/programs needed to run everything)
     * Note: .conda was very problematic with GATK - a manual installation and alias may be needed (see instructions in Appendix below)
 
-# Steps to STR genotyping pipeline
-1. Initial data processing/cleaning (done by Annika)
-2. Fasta/Fastq Input File Generation, separated by primer and sample
-3. Config file creation (see link: https://drive.google.com/file/d/1xQ2A38eSKoq75_ttMmsK4Yl4AuyFVFVQ/view?usp=sharing)
-    * .config files created using multiple flanking region options often have too many flanks/incorrect flanks that contain the repeat motif
-    * Created four files within fix_config_files to help with this, with one primer's multiple-flank config file at a time
-    * Full description/order of analyses: https://docs.google.com/document/d/1SrBHJA-7HQTlyU8EoovvQSa5ho_orZcSchW9jNAJpww/edit?usp=sharing
+#To run the full SNPSTR Pipeline:
+1. ./processReadsBeforeSTRaitRazor.sh $speciesPrefix $referenceGenome $sampleListFile (look within the process_reads_before_strait_razor subdirectory within GitLab)
+2. ./makeConfigAndRunAllSTRaitRazor.sh $referenceGenome $sampleListFile (within config_and_strait_razor directory)
+    * Note: there are some leftover R scripts and Jupyter Notebooks in the main directory of the repository that allow an organized comparison of STR genotypes and excel table genotypes for samples with manually-computed genotypes. The order of these scripts is:
+        * 1. Rscript getExcelTableGenotypes.R
+        * 2. Rscript compareSTRaitWithExcel.r
+        * 3. STRait_Razor_Allele_Mismatch_Evaluation.ipynb (need to copy files and modify path names)
+3. Within the snps_with_merging directory, run four separate scripts, since there's some things you need to do by hand prior to running the next step (look within these files for more information):
+    a. ./findSNPsWithMergingPart1.sh $sampleListFile (within part_1)
+    b. ./findSNPsWithMergingPart2.sh $sampleListFile $genomics-db_workspace_path
+    c. ./findSNPsWithMergingPart3.sh
+    d. ./organizeSNPSTRResults.sh
 
-4. Run STRait razor/filter output
-    * runAllSTRaitRazor.sh
-    * processMultipleFlanksSTRaitRazorResults.r
-5. Gather results into one table of STRait Razor Genotypes (homozygous or heterozygous, with full genotypes of alleles)
-    * getSTRaitRazorGenotypes.r
-6. Compare to Excel table
-    * getExcelTableGenotypes.r
-    * compareSTRaitWithExcel.r
+The final output tables should be stored in the finalExcelOutputs subdirectory within the main working directory. Each table contains SNPs and STRs for one primer and all samples that were able to be genotyped (in .tsv format). These tables closely resemble the format that needs to be uploaded to the FOGS database.
 
-7. Convert genotyping errors to a .txt file for easy viewing/visualize copy number errors/post-processing
-    * STRait_Razor_Allele_Mismatch_Evaluation.ipynb
-
-8. Compare old results using one-line .config files (PERF_tsv_to_STRaitRazor_config.r) with new results using complex config file creation - see which primers are problematic and try to fix issues
-    * Compare_Old_and_New_STRait_Razor_Results.ipynb
-
-##BIG ISSUES
+#BIG ISSUES
 * Determining STR and SNP zygosity using a certain threshold for the proportion of reads
 * There's barely any indel handling within the .config file generation process
 * Not all reads are the same length after merging, meaning that GATK finds many STR pieces along with SNPs
+
+#SMALLER ISSUES
+
