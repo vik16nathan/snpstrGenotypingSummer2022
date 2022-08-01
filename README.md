@@ -20,9 +20,9 @@ All scripts in the final_scripts directory should be **copied into one directory
 1. ./processReadsBeforeSTRaitRazor.sh $speciesPrefix $referenceGenome $sampleListFile (look within the process_reads_before_strait_razor subdirectory within GitLab)
 2. ./makeConfigAndRunAllSTRaitRazor.sh $referenceGenome $sampleListFile (within config_and_strait_razor directory)
     * Note: there are some leftover R scripts and Jupyter Notebooks in the main directory of the repository that allow an organized comparison of STR genotypes and excel table genotypes for samples with manually-computed genotypes. The order of these scripts is:
-        * 1. Rscript getExcelTableGenotypes.R
-        * 2. Rscript compareSTRaitWithExcel.r
-        * 3. STRait_Razor_Allele_Mismatch_Evaluation.ipynb (need to copy files and modify path names)
+        * a. Rscript getExcelTableGenotypes.R
+        * b. Rscript compareSTRaitWithExcel.r
+        * c. STRait_Razor_Allele_Mismatch_Evaluation.ipynb (need to copy files and modify path names)
 3. Within the snps_with_merging directory, run four separate scripts, since there's some things you need to do by hand prior to running the next step (look within these files for more information):
     * a. ./findSNPsWithMergingPart1.sh $sampleListFile (within part_1)
     * b. ./findSNPsWithMergingPart2.sh $sampleListFile $genomics-db_workspace_path
