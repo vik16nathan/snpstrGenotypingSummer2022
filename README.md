@@ -72,6 +72,6 @@ Let . be the working directory.
 # Installing GATK by hand
 1. https://github.com/broadinstitute/gatk/releases - download .zip file, unzip it, copy unzipped gatk-4.2.6.1 into home directory (~) 
     * Note: check for updates!
-2. Edit ~/.bashrc and add the following line: alias gatk='~/gatk-4.2.6.1/gatk'
+2. Go to home ~ directory and edit .bashrc. Add the following line: alias gatk='~/gatk-4.2.6.1/gatk'
 3. Calling gatk will now invoke the version on your machine
 
