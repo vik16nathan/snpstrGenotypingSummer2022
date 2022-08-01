@@ -1,8 +1,8 @@
 # SNPSTR Genotyping
 
-**Full pipeline diagram:** https://drive.google.com/file/d/1z0RFqbo7p3CsDVEtBkatqBwpkV4fFFWB/view?usp=sharing
-Goal: to integrate and improve upon existing bioinformatics software to accurately genotype and detect STRs and SNPs within NGS data from PCR-amplified DNA, with the ultimate goal of using SNPSTRs to detect illegal animal trade.
+The scripts in this repository represent the work I've done in the past two months to streamline the process of jointly genotyping SNPs and STRs contained with roughly 30 forward and reverse primers, where each set of forward and reverse primers represents a 300 b.p. region where a STR and possibly multiple SNPs are found.
 
+The ultimate goal of this pipeline is to automate the detection of SNPSTRs for any number of samples of a particular animal species in Annika Mozer's FOGS (Forensic Genetics for Species Protection) project, which will hopefully save Annika and other researchers invaluable time. Although the current pipeline isn't perfect, it has proven to be ~80% accurate at STR genotyping for *Pyrrhula pyrrhula* and quite good at assigning SNP alternative alleles to the STR primers, samples, and alleles to which they belong, particularly for primers with lots of functioning reads. 
 
 # Steps to STR genotyping pipeline
 1. Initial data processing/cleaning (done by Annika)
@@ -27,3 +27,7 @@ Goal: to integrate and improve upon existing bioinformatics software to accurate
 8. Compare old results using one-line .config files (PERF_tsv_to_STRaitRazor_config.r) with new results using complex config file creation - see which primers are problematic and try to fix issues
     * Compare_Old_and_New_STRait_Razor_Results.ipynb
 
+##BIG ISSUES
+* Determining STR and SNP zygosity using a certain threshold for the proportion of reads
+* There's barely any indel handling within the .config file generation process
+* Not all reads are the same length after merging, meaning that GATK finds many STR pieces along with SNPs
