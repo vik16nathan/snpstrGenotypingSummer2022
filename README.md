@@ -25,8 +25,11 @@ All scripts in the final_scripts directory should be **copied into one directory
         * 3. STRait_Razor_Allele_Mismatch_Evaluation.ipynb (need to copy files and modify path names)
 3. Within the snps_with_merging directory, run four separate scripts, since there's some things you need to do by hand prior to running the next step (look within these files for more information):
     a. ./findSNPsWithMergingPart1.sh $sampleListFile (within part_1)
+
     b. ./findSNPsWithMergingPart2.sh $sampleListFile $genomics-db_workspace_path
+
     c. ./findSNPsWithMergingPart3.sh
+    
     d. ./organizeSNPSTRResults.sh
 
 The final output tables should be stored in the finalExcelOutputs subdirectory within the main working directory. Each table contains SNPs and STRs for one primer and all samples that were able to be genotyped (in .tsv format). These tables closely resemble the format that needs to be uploaded to the FOGS database.
