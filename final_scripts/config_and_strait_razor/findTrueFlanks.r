@@ -60,9 +60,7 @@ for(row in c(1:nrow(incorrect_flanks_with_ref))) {
 
     incorrect_flank_pos <- incorrect_flanks_with_ref[row,"Motif Position"]
     fasta_ref <- incorrect_flanks_with_ref[row,"Fasta Sequence"]
-    #Slide 4 b.p. window backwards if we're dealing with a 5' flank and 
-    #forwards if we're dealing with a 3' flank
-
+    
     keep_sliding<-TRUE
 
     while(keep_sliding) {
