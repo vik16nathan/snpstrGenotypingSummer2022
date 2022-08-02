@@ -9,7 +9,7 @@ sampleListFile=$1
 ./mergeSeparatedAlleleReads.sh $sampleListFile
 ./mapMergedAlleleSeparatedFastq.sh $sampleListFile
 ./mappingPostMergedSeparated.sh $sampleListFile
-./CallVariantsMergedSeparated.sh
+./CallVariantsMergedSeparated.sh $sampleListFile
 
 #delete all empty files
 find ./separatedGVCFs/ -type f -empty -print -delete
