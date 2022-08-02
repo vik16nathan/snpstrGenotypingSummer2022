@@ -1,7 +1,8 @@
 #!/bin/bash -i
 
 sampleListFile=$1
-./makeConsolidateGVCFs.sh > ConsolidateGVCFsMergedSeparated.sh
+contigFile=$2
+(./makeConsolidateGVCFs.sh $contigFile) > ConsolidateGVCFsMergedSeparated.sh
 chmod +x ConsolidateGVCFsMergedSeparated.sh
 ./ConsolidateGVCFsMergedSeparated.sh
 
