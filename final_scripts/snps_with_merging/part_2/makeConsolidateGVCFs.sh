@@ -6,7 +6,6 @@
 #delete all empty files
 
 contigsFilename=$1
-genomicsdb-workspace-path=$2
 find ./separatedGVCFs/ -type f -empty -print -delete
 
 echo "#!/bin/bash -i"
@@ -18,5 +17,5 @@ do
     echo "  -V "\"\.\/separatedGVCFs\/$file\" \\""
 done
 
-echo "--genomicsdb-workspace-path ${genomicsdb-workspace-path} \\"
+echo "--genomicsdb-workspace-path merged-separated \\"
 echo "-L ${contigsFilename}"
