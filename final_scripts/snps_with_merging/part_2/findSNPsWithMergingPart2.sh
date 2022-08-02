@@ -11,3 +11,5 @@ chmod +x ConsolidateGVCFsMergedSeparated.sh
 #IMPORTANT - by hand - determine the line number of the start of the .vcf table (column names) in the gvcf file!!
 #choose the number by hand and edit VariantsToTableMerged.sh
 gunzip MergedVariantsBeforeFiltering.vcf.gz
+
+#The number needed for VariantsToTableMerged.sh: $(grep -hn "#CHROM" MergedVariantsBeforeFiltering.vcf | cut -d : -f 1)
