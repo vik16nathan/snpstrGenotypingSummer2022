@@ -12,4 +12,4 @@ chmod +x ConsolidateGVCFsMergedSeparated.sh
 #choose the number by hand and edit VariantsToTableMerged.sh
 gunzip MergedVariantsBeforeFiltering.vcf.gz
 
-#The number needed for VariantsToTableMerged.sh: $(grep -hn "#CHROM" MergedVariantsBeforeFiltering.vcf | cut -d : -f 1)
+#The number needed for VariantsToTableMerged.sh: $(grep -n "#CHROM" MergedVariantsBeforeFiltering.vcf | cut -d : -f 1)
