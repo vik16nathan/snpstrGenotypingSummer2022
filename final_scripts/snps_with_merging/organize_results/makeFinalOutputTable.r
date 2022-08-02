@@ -1,6 +1,7 @@
 library(readr)
 library(stringr)
 library(dplyr)
+library(writexl)
 
 #Load in the intermediate pre-processed output table from processFinalVariantTableNew.r
 args = commandArgs(trailingOnly=TRUE)
@@ -173,5 +174,7 @@ for(primer in c(1:30)) {
     
     write.table(overall_primer_output_data_frame, paste0("./finalExcelOutputs/Primer",primer,"_SNPSTRs.tsv"),row.names=FALSE,
         quote=FALSE, sep="\t")
+    
+    write_xlsx(x=as.data.frame(overall_primer_output_data_frame), paste0("./finalExcelOutputs/Primer",primer,"_SNPSTRs.xlsx"))
 
 }
