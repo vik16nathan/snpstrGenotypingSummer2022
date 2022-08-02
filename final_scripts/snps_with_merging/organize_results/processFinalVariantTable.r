@@ -91,16 +91,16 @@ for(primer in c(1:30)) {
   primer_genotype_rows <- which(annotated_vcf["#CHROM"]==primer_string)
   for(sample in sample_names) {
     #See if STR is homozygous, heterozygous, or not in STRait Razor result file
-    if(length(which(as.vector(str_table["Primer"])==as.numeric(primer) & 
-          as.vector(str_table["Sample"])==as.numeric(sample)))==0) {
+    if(length(which(str_table["Primer"]==as.numeric(primer) & 
+          str_table["Sample"]==as.numeric(sample)))==0) {
           print(paste("STR not in result file for primer",primer,"and sample",sample))
           next
     } else {
       print(paste("Primer:",primer))
       print(paste("Sample:",sample))
       print("******************************************************************************")
-      str_row <- which(as.vector(str_table["Primer"])==as.numeric(primer) & 
-                      as.vector(str_table["Sample"])==as.numeric(sample))
+      str_row <- which((str_table["Primer"])==as.numeric(primer) & 
+                      (str_table["Sample"])==as.numeric(sample))
       
       if(str_table[str_row,"Zygosity"] == "ho") {
         #Iterate through all SNP genotypes and see if the sample is homozygous or heterozygous
@@ -118,7 +118,6 @@ for(primer in c(1:30)) {
           }
           entry <- format(annotated_vcf[row, which(colnames(annotated_vcf) == paste(primer, sample, "1",sep="_"))])
           entry_zygosity <- determine_het_0_1_genotype(entry)
-          print(entry_zygosity)
           if(entry_zygosity == "ho 0") {
             output_table[row, paste0(sample,"_SNP_zygosity")] <- "ho"
             output_table[row, paste0(sample,"_STR_alleles_where_SNP_is_found")] <- "0"
@@ -139,14 +138,10 @@ for(primer in c(1:30)) {
 
           #Look at allele 1 and 2 of the SNP genotype
           allele_1_entry <- annotated_vcf[row, which(colnames(annotated_vcf) == paste(primer, sample, "1",sep="_"))]
-          print(allele_1_entry)
           allele_1_zygosity <- determine_het_0_1_genotype(allele_1_entry)
-          print(allele_1_zygosity)
 
           allele_2_entry <- annotated_vcf[row, which(colnames(annotated_vcf) == paste(primer, sample, "2",sep="_"))]
-          print(allele_2_entry)
           allele_2_zygosity <- determine_het_0_1_genotype(allele_2_entry)
-          print(allele_2_zygosity)
 
           if(allele_1_zygosity %in% c("ho 1","he") && allele_2_zygosity %in% c("ho 1","he")) {
             output_table[row, paste0(sample,"_SNP_zygosity")] <- "ho"
@@ -185,6 +180,9 @@ for(sample in sample_names) {
   }
 }
 head(output_table)
-write.table(output_table, paste(args[1],"_no_STR_alleles_intermediate.table",sep=""),sep="\t",
+snp_output_table <- output_table[(intersect(which(nchar(as.character(output_table[,3])) == 1),
+            which(nchar(as.character(output_table[,4])) == 1))),]
+
+write.table(snp_output_table, paste(args[1],"_no_STR_alleles_intermediate.table",sep=""),sep="\t",
           quote=FALSE,row.names=FALSE)
 
