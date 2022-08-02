@@ -20,7 +20,7 @@ All scripts in the final_scripts directory should be **copied into one directory
 # To run the full SNPSTR Pipeline:
 Before starting, activate the conda environment to make sure all software tools required for the analysis are installed. Note that the script may nonetheless say that some tools are missing - if an entire tool is missing, try conda install nameOfTool, or if an R package is missing, see the last bullet point under "Issues."
 
-Type in conda env create -f fullSNPSTREnv.yml, and then conda activate fullSNPSTREnv.
+Type in conda env create -f fullSNPSTREnv.yml, and then conda activate fullSNPSTREnv. (or conda env update -f fullSNPSTREnv.yml if you need to update the environment)
 
 1. ./processReadsBeforeSTRaitRazor.sh $speciesPrefix $referenceGenome $sampleListFile (look within the process_reads_before_strait_razor subdirectory within GitLab)
 2. ./makeConfigAndRunAllSTRaitRazor.sh $referenceGenome $sampleListFile (within config_and_strait_razor directory)
