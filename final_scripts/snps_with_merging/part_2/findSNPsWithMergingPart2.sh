@@ -1,7 +1,7 @@
 #!/bin/bash -i
 
 sampleListFile=$1
-genomics-db_workspace_path=$2 #user-specified directory name for ConsolidateGVCFs output
+genomics-db_workspace_path="merged-separated" #user-specified directory name for ConsolidateGVCFs output
 ./makeConsolidateGVCFs.sh > ConsolidateGVCFsMergedSeparated.sh
 chmod +x ConsolidateGVCFsMergedSeparated.sh
 ./ConsolidateGVCFsMergedSeparated.sh
