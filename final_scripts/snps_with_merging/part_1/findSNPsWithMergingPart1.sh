@@ -14,8 +14,8 @@ sampleListFile=$1
 #delete all empty files
 find ./separatedGVCFs/ -type f -empty -print -delete
 
-#BY HAND - need to make a .contigs list of all Primers with non-empty results in
-#separatedGVCFs directory from ./CallVariantsMergedSeparated.sh
+#BY HAND - need to make a contigs .list file of all Primers in the main working directory.
+#Include primers with non-empty results from the separatedGVCFs directory
 
 #Contigs list should contain one primer per line, entries should be in the form Primer1, etc
 
