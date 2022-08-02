@@ -18,4 +18,4 @@ Rscript PERF_tsv_to_STRaitRazor_config.r 10
 ./runAllSTRaitRazor.sh $sampleListFile
 #need processMultipleFlanksSTRaitRazorResults.r
 
-Rscript getSTRaitRazorGenotypes.r 0.15 #15% occurrence threshold for a "significant" allele
+Rscript getSTRaitRazorGenotypes.r 0.15 $sampleListFile #15% occurrence threshold for a "significant" allele
