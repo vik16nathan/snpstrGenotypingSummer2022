@@ -10,11 +10,14 @@ There are three main parts of the pipeline:
 3. Merge .fastq files separated by primer, sample, and the alleles identified in (2), find SNPs that correspond to each primer, sample, and allele, and then consolidate and filter results into the desired SNPSTR table format
 
 All scripts in the final_scripts directory should be **copied into one directory** (with NO subdirectories); this working directory should already contain the following inputs (also not within subdirectories):
-* A list of sample IDs (should be in the form of speciesPrefix_sample_names.lst or any .lst file; one sample name per line and no trailing whitespace lines)
-* A set of unmerged, untrimmed Illumina MySeq reads corresponding to the PCR products in the format speciesPrefix-${sample_number}_S1_L001_R1_001.fastq and speciesPrefix-${sample_number}_S1_L001_R2_001.fastq (make sure to also remember what speciesPrefix is!!)
+* A set of unmerged, untrimmed Illumina MySeq reads corresponding to the PCR products in the format ${sample_number}_S1_L001_R1_001.fastq and ${sample_number}_S1_L001_R2_001.fastq.
+    * Note: **Inputs must be in this format.**  The list of sample names is automatically generated at the very beginning under the condition that all reads are in the format above.
 * A reference file containing a sequence for each primer (in .fasta file format)
 * The .conda environment fullSNPSTREnv (to aid in downloading packages/programs needed to run everything)
+    * i. conda env create -f fullSNPSTREnv.yml
+    * ii. conda env activate fullSNPSTREnv
     * Note: .conda was very problematic with GATK - a manual installation and alias may be needed (see instructions in Appendix below)
+
 
 
 # To run the full SNPSTR Pipeline:
@@ -22,7 +25,7 @@ Before starting, activate the conda environment to make sure all software tools 
 
 Type in conda env create -f fullSNPSTREnv.yml, and then conda activate fullSNPSTREnv. (or conda env update -f fullSNPSTREnv.yml if you need to update the environment)
 
-1. ./processReadsBeforeSTRaitRazor.sh $speciesPrefix $referenceGenome $sampleListFile (look within the process_reads_before_strait_razor subdirectory within GitLab)
+1. ./processReadsBeforeSTRaitRazor.sh $referenceGenome $sampleListFile (look within the process_reads_before_strait_razor subdirectory within GitLab)
 2. ./makeConfigAndRunAllSTRaitRazor.sh $referenceGenome $sampleListFile (within config_and_strait_razor directory)
     * Note: there are some leftover R scripts and Jupyter Notebooks in the main directory of the repository that allow an organized comparison of STR genotypes and excel table genotypes for samples with manually-computed genotypes. The order of these scripts is:
         * a. Rscript getExcelTableGenotypes.R
