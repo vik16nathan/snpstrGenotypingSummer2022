@@ -30,17 +30,15 @@ reverse_flanking_sequence <- function(sequence) {
 }
 
 
-list_of_samples=c("1232","1393","1791","2006092","2006174","217","2520669","2599208","34896","34966")
-
 #Read in the primer
 #Take the primer as an input
 args = commandArgs(trailingOnly=TRUE)
-if (length(args)!=1) {
-  stop("Must supply primer only!", call.=FALSE)
+if (length(args)!=2) {
+  stop("Must supply primer and list of samples!!", call.=FALSE)
 } 
 
 primer <- args[1]
-
+list_of_samples <- readLines(args[2])
 #Load in file containing "incorrect" flanks
 incorrect_flank_file <- as.data.frame(read_tsv(paste(
     "./possibleIncorrectFlanks/Primer",primer,"_possible_incorrect_flanks.tsv",sep="")))
