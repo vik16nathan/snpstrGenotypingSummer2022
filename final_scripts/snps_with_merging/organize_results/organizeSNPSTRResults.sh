@@ -14,4 +14,5 @@ tail -n +$tableStart MergedVariantsFilteredAnnotated.vcf > MergedVariantsFiltere
 Rscript processFinalVariantTable.r MergedVariantsFilteredAnnotated.table MergedVariantsFilteredAnnotatedTableOnly.vcf  $sampleListFile
 
 mkdir finalExcelOutputs
-Rscript makeFinalOutputTable.r $sampleListFile
+#Rscript makeFinalOutputTable.r $sampleListFile
+Rscript makeCondensedFinalOutputTable.r $sampleListFile
