@@ -39,7 +39,7 @@ do
         fi        
     done
     #Combine results for each primer
-    Rscript filterFlankingRegions.r $primer 
+    Rscript filterFlankingRegions.r $primer $sampleListFile
 
         #Place the most signficant flanking regions in the .config file
     
