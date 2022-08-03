@@ -30,8 +30,8 @@ reverse_flanking_sequence <- function(sequence) {
     print(reversed_sequence)
 }
 args = commandArgs(trailingOnly=TRUE)
-if (length(args)!=1) {
-  stop("Must supply primer!", call.=FALSE)
+if (length(args)!=2) {
+  stop("Must supply primer and list of samples!!", call.=FALSE)
 } 
 
 
@@ -39,8 +39,8 @@ primer <- args[1]
 print("Primer:")
 print(primer)
 print("****************************************************")
-list_of_samples <- c("1232","1393","1791","2006092",
-                "2006174","217","2520669","2599208","34896","34966")
+
+list_of_samples <- readLines(args[2])
 
 #Determine forward and reverse directions with reference genome PERF output
 perf_reference <- as.data.frame(read_tsv(
