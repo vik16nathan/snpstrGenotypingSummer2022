@@ -25,6 +25,7 @@ Before starting, activate the conda environment to make sure all software tools 
 
 Type in conda env create -f fullSNPSTREnv.yml, and then conda activate fullSNPSTREnv. (or conda env update -f fullSNPSTREnv.yml if you need to update the environment)
 
+0. ./makeSampleListFromReadInputs.sh: makes sample_names.lst - use this as $sampleListFile for all subsequent scripts (can also do this manually if there aren't too many samples) 
 1. ./processReadsBeforeSTRaitRazor.sh $referenceGenome $sampleListFile (look within the process_reads_before_strait_razor subdirectory within GitLab)
 2. ./makeConfigAndRunAllSTRaitRazor.sh $referenceGenome $sampleListFile (within config_and_strait_razor directory)
     * Note: there are some leftover R scripts and Jupyter Notebooks in the main directory of the repository that allow an organized comparison of STR genotypes and excel table genotypes for samples with manually-computed genotypes. The order of these scripts is:
