@@ -12,7 +12,7 @@ Rscript PERF_tsv_to_STRaitRazor_config.r 10
 ./makeConfigFromAllReadsFasta.sh $sampleListFile
 #need extractFlankingRegions.r and filterFlankingRegions.r
 
-./fixAllConfig.sh 
+./fixAllConfig.sh $sampleListFile
 #need findIncorrectFlanks.r, findReferencesForIncorrectFlanks.r, findTrueFlanks.r, and fixConfigFile.r
 
 ./runAllSTRaitRazor.sh $sampleListFile
