@@ -2,11 +2,10 @@
 
 #Trim, QC, and map reads
 
-speciesPrefix=$1
-referenceGenome=$2
-sampleListFile=$3
+referenceGenome=$1
+sampleListFile=$2
 #conda activate qc
-./trimming.sh $speciesPrefix
+./trimming.sh
 ./fastqc.sh
 ./multiqc.sh
 #conda deactivate qc
