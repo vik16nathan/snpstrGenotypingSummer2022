@@ -15,10 +15,12 @@ determine_het_0_1_genotype <- function(genotype_entry) {
   print(total_num_reads)
   if(total_num_reads == 0 || split_entry[3] == ".") { return("ho 0") }
 
-  if((num_ref_reads/total_num_reads) >= 0.15 &&
-    (num_alt_reads/total_num_reads) >= 0.15) {
+  #CHANGE THIS BOUNDARY once you've tested on more data
+  read_percent_threshold <- 0.15
+  if((num_ref_reads/total_num_reads) >= read_percent_threshold &&
+    (num_alt_reads/total_num_reads) >= read_percent_threshold) {
       return("he")
-    } else if((num_ref_reads/total_num_reads) >= 0.15) {
+    } else if((num_ref_reads/total_num_reads) >= read_percent_threshold) {
       return("ho 0")
     } else {
       return("ho 1")
