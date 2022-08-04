@@ -30,15 +30,17 @@ reverse_flanking_sequence <- function(sequence) {
 }
 
 
+
 #Read in the primer
 #Take the primer as an input
 args = commandArgs(trailingOnly=TRUE)
 if (length(args)!=2) {
-  stop("Must supply primer and list of samples!!", call.=FALSE)
+  stop("Must supply primer and sample list!", call.=FALSE)
 } 
 
 primer <- args[1]
 list_of_samples <- readLines(args[2])
+
 #Load in file containing "incorrect" flanks
 incorrect_flank_file <- as.data.frame(read_tsv(paste(
     "./possibleIncorrectFlanks/Primer",primer,"_possible_incorrect_flanks.tsv",sep="")))
@@ -93,9 +95,14 @@ for(sample in list_of_samples)
                 break
     }
     
-    flank_file <- as.data.frame(read_tsv(
-        paste("./separatedFlanks/",sample,
-        ".sorted.duplicates_Primer",primer,"_flanks.tsv",sep="")))
+    flank_filename <- paste("./separatedFlanks/",sample,
+        ".sorted.duplicates_Primer",primer,"_flanks.tsv",sep="")
+
+    if(!file.exists(flank_filename)) {
+        print(paste("Flank file does not exist for primer",primer, "and sample", sample,"!"))
+        next
+    }
+    flank_file <- as.data.frame(read_tsv(flank_filename))
     
     fasta_file <- readLines(
         paste("./FastaInputs/",sample,
