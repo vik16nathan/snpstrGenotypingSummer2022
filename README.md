@@ -34,10 +34,13 @@ Type in conda env create -f fullSNPSTREnv.yml, and then conda activate fullSNPST
         * b. Rscript compareSTRaitWithExcel.r
         * c. STRait_Razor_Allele_Mismatch_Evaluation.ipynb (need to copy files and modify path names)
 3. Within the snps_with_merging directory, run four separate scripts, since there's some things you need to do by hand prior to running the next step (look within these files for more information):
+
+* **NEW:** Parts a-c have been conbined into ./findSNPsWithMergingFull.sh $sampleListFile !! Part d still needs to be run separately. 
     * a. ./findSNPsWithMergingPart1.sh $sampleListFile (within part_1)
-    * b. ./findSNPsWithMergingPart2.sh $sampleListFile $genomics-db_workspace_path
+    * b. ./findSNPsWithMergingPart2.sh $sampleListFile $contigFile 
+        *i. The .contig file is a list of all primers with non-empty GVCF results from (a)
     * c.  ./findSNPsWithMergingPart3.sh
-    * d. ./organizeSNPSTRResults.sh
+    * d. ./organizeSNPSTRResults.sh $sampleListFile
 
 The final output tables should be stored in the finalExcelOutputs subdirectory within the main working directory. Each table contains SNPs and STRs for one primer and all samples that were able to be genotyped (in .tsv format). These tables closely resemble the format that needs to be uploaded to the FOGS database.
 
