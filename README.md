@@ -38,7 +38,7 @@ Type in conda env create -f fullSNPSTREnv.yml, and then conda activate fullSNPST
 * **NEW:** Parts a-c have been conbined into ./findSNPsWithMergingFull.sh $sampleListFile !! Part d still needs to be run separately. 
     * a. ./findSNPsWithMergingPart1.sh $sampleListFile (within part_1)
     * b. ./findSNPsWithMergingPart2.sh $sampleListFile $contigFile 
-        *i. The .contig file is a list of all primers with non-empty GVCF results from (a)
+        * i. The .contig file is a list of all primers with non-empty GVCF results from (a)
     * c.  ./findSNPsWithMergingPart3.sh
     * d. ./organizeSNPSTRResults.sh $sampleListFile
 
