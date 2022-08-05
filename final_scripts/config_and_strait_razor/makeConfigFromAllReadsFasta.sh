@@ -40,7 +40,11 @@ do
     done
     #Combine results for each primer
     #Rscript filterFlankingRegions.r $primer $sampleListFile
-    Rscript filterFlankingRegionsEvenMore.r $primer $sampleListFile
+    Rscript filterFlankingRegionsEvenMore.r $primer $sampleListFile 1 #NOTE - edit the number of 
+    #extra flanking regions that we want to extract from the reads, in addition to the PERF flank 
+    #from the very beginning. We found that 1 worked the best for Anguilla and Pyrhulla, but 
+    #this needs more thorough testing.
+    
         #Place the most signficant flanking regions in the .config file
     
 done
