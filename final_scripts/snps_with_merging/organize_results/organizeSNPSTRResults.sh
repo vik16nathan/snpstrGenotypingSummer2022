@@ -11,12 +11,13 @@
 #... this could also make the original, non-fixed .config files a bit less erroneous, since we have to do this by hand anyways
 
 sampleListFile=$1
+hetThreshold=$2
 tableStart=$(grep -n "#CHROM" MergedVariantsFilteredAnnotated.vcf | cut -d : -f 1)
 tail -n +$tableStart MergedVariantsFilteredAnnotated.vcf > MergedVariantsFilteredAnnotatedTableOnly.vcf
 
 ./VariantsToTable2Merged.sh
 
-Rscript processFinalVariantTable.r MergedVariantsFilteredAnnotated.table MergedVariantsFilteredAnnotatedTableOnly.vcf $sampleListFile 0.15
+Rscript processFinalVariantTable.r MergedVariantsFilteredAnnotated.table MergedVariantsFilteredAnnotatedTableOnly.vcf $sampleListFile $hetThreshold
 
 mkdir finalExcelOutputs
 
