@@ -18,7 +18,7 @@ sampleListFile=$2
 #conda activate straitRazorEnv
 ./makeAllSTRaitRazorDirs.sh
 ./separateBamsByPrimerAndSample.sh $sampleListFile
-./filterPrimerSamplePairsWithTooFewReads.sh $sampleListFile
+./filterPrimerSamplePairsWithTooFewReads.sh $sampleListFile $threshold
 ./createFastqAllPrimersAllSamples.sh $sampleListFile
 
 #Install STRaitRazor if it hasn't already been installed
