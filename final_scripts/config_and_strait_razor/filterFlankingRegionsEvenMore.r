@@ -32,8 +32,8 @@ reverse_flanking_sequence <- function(sequence) {
     print(reversed_sequence)
 }
 args = commandArgs(trailingOnly=TRUE)
-if (length(args)!=2) {
-  stop("Must supply primer and sample list!!", call.=FALSE)
+if (length(args)!=3) {
+  stop("Must supply primer and sample list and number of extra flanks from the reads!!!", call.=FALSE)
 } 
 
 
@@ -156,24 +156,24 @@ all_significant_reverse_flanks_and_frequencies_aggregated <- all_significant_rev
 #NOTE - for the interest of time, I have chosen the TWO MOST FREQUENT forward/reverse flanks
 #There is likely a better way to do this (i.e. use a percentage threshold to determine which
 #forward/reverse flanks are actually present)
+num_flanks_to_choose <- as.numeric(args[3]) #edit this!!
+if(nrow(all_significant_forward_flanks_and_frequencies_aggregated) <= num_flanks_to_choose &&  
+    nrow(all_significant_forward_flanks_and_frequencies_aggregated) > 0) {
+    significant_forward_flanks <- all_significant_forward_flanks_and_frequencies_aggregated[,"5' Flank"]
 
-
-
-if(nrow(all_significant_forward_flanks_and_frequencies_aggregated) == 1) {
-    significant_forward_flanks <- all_significant_forward_flanks_and_frequencies_aggregated[1,"5' Flank"]
-
-} else if(nrow(all_significant_forward_flanks_and_frequencies_aggregated) > 1) {
-    significant_forward_flanks <- all_significant_forward_flanks_and_frequencies_aggregated[c(1:2),"5' Flank"]
+} else if(nrow(all_significant_forward_flanks_and_frequencies_aggregated) > num_flanks_to_choose) {
+    significant_forward_flanks <- all_significant_forward_flanks_and_frequencies_aggregated[c(1:num_flanks_to_choose),"5' Flank"]
 
 } else {
     significant_forward_flanks <- c()
 }
 
-if(nrow(all_significant_reverse_flanks_and_frequencies_aggregated) == 1) {
+if(nrow(all_significant_reverse_flanks_and_frequencies_aggregated) <= num_flanks_to_choose &&
+    nrow(all_significant_reverse_flanks_and_frequencies_aggregated) > 0) {
     significant_reverse_flanks <- all_significant_reverse_flanks_and_frequencies_aggregated[1,"3' Flank Reversed"]
 
-} else if(nrow(all_significant_reverse_flanks_and_frequencies_aggregated) > 1) {
-    significant_reverse_flanks <- all_significant_reverse_flanks_and_frequencies_aggregated[c(1:2),"3' Flank Reversed"]
+} else if(nrow(all_significant_reverse_flanks_and_frequencies_aggregated) > num_flanks_to_choose) {
+    significant_reverse_flanks <- all_significant_reverse_flanks_and_frequencies_aggregated[c(1:num_flanks_to_choose),"3' Flank Reversed"]
 
 } else {
     significant_reverse_flanks <- c()
