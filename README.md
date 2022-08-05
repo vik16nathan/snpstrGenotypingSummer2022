@@ -40,7 +40,7 @@ Type in conda env create -f fullSNPSTREnv.yml, and then conda activate fullSNPST
     * b. ./findSNPsWithMergingPart2.sh $sampleListFile $contigFile 
         * i. The .contig file is a list of all primers with non-empty GVCF results from (a)
     * c.  ./findSNPsWithMergingPart3.sh
-    * d. ./organizeSNPSTRResults.sh $sampleListFile
+    * d. ./organizeSNPSTRResults.sh $sampleListFile $hetThreshold, where hetThreshold is a decimal between 0 and 1 that represents the boundary between heterozygous and homozygous (ex: using 0.15 means that any .vcf table entry with >15% alt alleles AND >15% ref alleles will be called homozygous)
 
 The final output tables should be stored in the finalExcelOutputs subdirectory within the main working directory. Each table contains SNPs and STRs for one primer and all samples that were able to be genotyped (in .tsv format). These tables closely resemble the format that needs to be uploaded to the FOGS database.
 
