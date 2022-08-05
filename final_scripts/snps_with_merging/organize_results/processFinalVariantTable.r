@@ -1,6 +1,22 @@
 library(readr)
 library(stringr)
 
+args = commandArgs(trailingOnly=TRUE)
+if (length(args)!=4) {
+  stop("Must supply name of SNP table after filtering and annotation, 
+    , the name of the annotated .vcf file, the list of samples, and the percent heterozygosity threshold!!", call.=FALSE)
+} 
+
+
+final_variant_table <- as.data.frame(read.table(args[1],header=TRUE))
+
+#Note: the vcf input has to have all the initial header lines removed
+#and contain the tabular data only. This can be easily done with sed/cut/tail/etc
+
+annotated_vcf <- as.data.frame(read_tsv(args[2]))
+#Make column names
+sample_names <- readLines(args[3])
+het_threshold <- as.numeric(args[4])
 #Function to determine whether a genotype entry with 0/1 in the .vcf file
 #is homozygous or heterozygous for a SNP
 determine_het_0_1_genotype <- function(genotype_entry) {
@@ -15,31 +31,16 @@ determine_het_0_1_genotype <- function(genotype_entry) {
   print(total_num_reads)
   if(total_num_reads == 0 || split_entry[3] == ".") { return("ho 0") }
 
-  #CHANGE THIS BOUNDARY once you've tested on more data
-  read_percent_threshold <- 0.15
-  if((num_ref_reads/total_num_reads) >= read_percent_threshold &&
-    (num_alt_reads/total_num_reads) >= read_percent_threshold) {
+  if((num_ref_reads/total_num_reads) >= het_threshold &&
+    (num_alt_reads/total_num_reads) >= het_threshold) {
       return("he")
-    } else if((num_ref_reads/total_num_reads) >= read_percent_threshold) {
+    } else if((num_ref_reads/total_num_reads) >= het_threshold) {
       return("ho 0")
     } else {
       return("ho 1")
     }
 }
 
-args = commandArgs(trailingOnly=TRUE)
-if (length(args)!=3) {
-  stop("Must supply name of SNP table after filtering and annotation, 
-    , the name of the annotated .vcf file, and the list of samples!!", call.=FALSE)
-} 
-
-
-final_variant_table <- as.data.frame(read.table(args[1],header=TRUE))
-
-#Note: the vcf input has to have all the initial header lines removed
-#and contain the tabular data only. This can be easily done with sed/cut/tail/etc
-
-annotated_vcf <- as.data.frame(read_tsv(args[2]))
 #Remove all columns before primer/sample/allele
 
 columns_to_remove <- c( "ID", "QUAL", "FILTER", "INFO", "FORMAT")
@@ -68,8 +69,7 @@ output_table <- final_variant_table[,c(1:4)]
 #4. overall_zygosity; "ho" if SNP and STR are "ho"; 
 #"he" otherwise
 
-#Make column names
-sample_names <- readLines(args[3])
+
 new_column_names <- c()
 for(sample_name in sample_names) {
   for(suffix in c("_STR_zygosity","_SNP_zygosity", 
