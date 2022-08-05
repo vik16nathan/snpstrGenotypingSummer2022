@@ -1,5 +1,9 @@
 # SNPSTR Genotyping
 
+SEE PDF WITH FULL PIPELINE: https://drive.google.com/file/d/1n9D17b8nc1Z8mvfSXcy4bWfgS7HHeXnQ/view?usp=sharing
+
+See overview PDF (coming soon):
+
 The scripts in this repository represent the work I've done in the past two and a half months to streamline the process of jointly genotyping SNPs and STRs contained with roughly 30 forward and reverse primers, where each set of forward and reverse primers represents a 300 b.p. region where a STR and possibly multiple SNPs are found.
 
 The ultimate goal of this pipeline is to automate the detection of SNPSTRs for any number of samples of a particular animal species in Annika Mozer's FOGS (Forensic Genetics for Species Protection) project, which will hopefully save Annika and other researchers invaluable time. Although the current pipeline isn't perfect, it has proven to be ~80% accurate at STR genotyping for *Pyrrhula pyrrhula* and quite good at assigning SNP alternative alleles to the STR primers, samples, and alleles to which they belong, particularly for primers with lots of functioning reads. 
