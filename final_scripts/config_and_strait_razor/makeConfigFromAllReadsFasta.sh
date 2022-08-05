@@ -9,6 +9,7 @@
 
 #Read in the list of samples
 sampleListFile=$1
+numberOfExtraFlanks=$2 #read in the number of extra flanks that the user wants to add to .config files
 mapfile -t listOfSamples < $sampleListFile
 for primer in {1..30}
 do
@@ -40,7 +41,7 @@ do
     done
     #Combine results for each primer
     #Rscript filterFlankingRegions.r $primer $sampleListFile
-    Rscript filterFlankingRegionsEvenMore.r $primer $sampleListFile 1 #NOTE - edit the number of 
+    Rscript filterFlankingRegionsEvenMore.r $primer $sampleListFile $numberOfExtraFlanks #NOTE - edit the number of 
     #extra flanking regions that we want to extract from the reads, in addition to the PERF flank 
     #from the very beginning. We found that 1 worked the best for Anguilla and Pyrhulla, but 
     #this needs more thorough testing.
